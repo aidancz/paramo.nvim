@@ -1,21 +1,57 @@
+local M = {}
+
+
+
 local para1 = require("paramo/para1")
 local para2 = require("paramo/para2")
 
 
 
+M.setup = function(config)
+
 -- # para1
 
-vim.keymap.set({"n", "v"}, "(", para1.backward)
-vim.keymap.set({"n", "v"}, ")", para1.forward)
-vim.keymap.set("o", "(", function() return "<cmd>normal V" .. vim.v.count1 .. "(<cr>" end, {expr = true})
-vim.keymap.set("o", ")", function() return "<cmd>normal V" .. vim.v.count1 .. ")<cr>" end, {expr = true})
+if config.para1_backward ~= "" then
+	vim.keymap.set({"n", "x"}, config.para1_backward, para1.backward)
+	vim.keymap.set("o", config.para1_backward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para1_backward)
+		end,
+		{expr = true})
+end
+
+if config.para1_forward ~= "" then
+	vim.keymap.set({"n", "x"}, config.para1_forward, para1.forward)
+	vim.keymap.set("o", config.para1_forward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para1_forward)
+		end,
+		{expr = true})
+end
 -- https://vi.stackexchange.com/questions/6101/is-there-a-text-object-for-current-line/6102#6102
-
-
 
 -- # para2
 
-vim.keymap.set({"n", "v"}, "<home>", para2.backward)
-vim.keymap.set({"n", "v"}, "<end>",  para2.forward)
-vim.keymap.set("o", "<home>", function() return "<cmd>normal V" .. vim.v.count1 .. "<home><cr>" end, {expr = true})
-vim.keymap.set("o", "<end>",  function() return "<cmd>normal V" .. vim.v.count1 .. "<end><cr>"  end, {expr = true})
+if config.para2_backward ~= "" then
+	vim.keymap.set({"n", "x"}, config.para2_backward, para2.backward)
+	vim.keymap.set("o", config.para2_backward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para2_backward)
+		end,
+		{expr = true})
+end
+
+if config.para2_forward ~= "" then
+	vim.keymap.set({"n", "x"}, config.para2_forward, para2.forward)
+	vim.keymap.set("o", config.para2_forward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para2_forward)
+		end,
+		{expr = true})
+end
+
+end
+
+
+
+return M
