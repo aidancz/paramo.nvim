@@ -28,7 +28,7 @@ para1 is like the `{` and `}` motions but before the empty line
 
 ![](assets/para2.png)
 
-how can we move cursor to the last line that have visible character?
+how can we move cursor to the last line that has visible character?
 
 para2 is here for you!
 
@@ -54,15 +54,15 @@ require("paramo").setup({
 	},
 	{
 		type = "para1",
+		screen_or_logical_column = "screen",
 		backward = "(",
 		forward = ")",
-		screen_or_logical_column = "screen",
 	},
 	{
 		type = "para2",
+		screen_or_logical_column = "screen",
 		backward = "<home>",
 		forward = "<end>",
-		screen_or_logical_column = "screen",
 	},
 })
 ```
@@ -75,18 +75,47 @@ if you want `para1` only:
 require("paramo").setup({
 	{
 		type = "para1",
+		screen_or_logical_column = "screen",
 		backward = "{",
 		forward = "}",
-		screen_or_logical_column = "screen",
-	},
-	{
-		type = "para1",
-		backward = "(",
-		forward = ")",
-		screen_or_logical_column = "logical",
 	},
 })
 ```
+
+### setup example 3:
+
+if you want to test the difference between `screen_or_logical_column = "screen"` and `screen_or_logical_column = "logical"`, you may:
+
+```
+require("paramo").setup({
+	{
+		type = "para1",
+		screen_or_logical_column = "screen",
+		backward = "{",
+		forward = "}",
+	},
+	{
+		type = "para1",
+		screen_or_logical_column = "logical",
+		backward = "(",
+		forward = ")",
+	},
+})
+```
+
+basically
+
+the option `screen_or_logical_column` is meaningful only when lines are wrapped
+
+the option `screen_or_logical_column` controls whether the cursor should stay on the screen column or the logical column
+
+as a result
+
+`para0` does not have this option
+
+`para1` has this option
+
+`para2` has this option
 
 ## lazy.nvim
 
@@ -102,15 +131,15 @@ require("paramo").setup({
 			},
 			{
 				type = "para1",
+				screen_or_logical_column = "screen",
 				backward = "(",
 				forward = ")",
-				screen_or_logical_column = "screen",
 			},
 			{
 				type = "para2",
+				screen_or_logical_column = "screen",
 				backward = "<home>",
 				forward = "<end>",
-				screen_or_logical_column = "screen",
 			},
 		})
 	end,
