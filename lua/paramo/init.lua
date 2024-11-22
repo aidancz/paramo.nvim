@@ -3,48 +3,103 @@ local M = {}
 
 
 M.setup = function(config)
+	for _, i in ipairs(config) do
+
+
+
+-- # para0
+
+if i.type == "para0" then
+	vim.keymap.set({"n", "x"}, i.backward, require("paramo/para0").backward)
+	vim.keymap.set("o", i.backward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
+		end,
+		{expr = true})
+
+	vim.keymap.set({"n", "x"}, i.forward, require("paramo/para0").forward)
+	vim.keymap.set("o", i.forward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
+		end,
+		{expr = true})
+end
 
 -- # para1
 
-if config.para1_backward ~= "" then
-	vim.keymap.set({"n", "x"}, config.para1_backward, require("paramo/para1").backward)
-	vim.keymap.set("o", config.para1_backward,
+if i.type == "para1" then
+	vim.keymap.set({"n", "x"}, i.backward,
 		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para1_backward)
+			require("paramo/para1").backward()
+			if i.screen_or_logical_column == "screen" then
+				local para0 = require("paramo/para0")
+				if not para0.head_p() then
+					para0.backward()
+				end
+			end
+		end)
+	vim.keymap.set("o", i.backward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
 		end,
 		{expr = true})
-end
 
-if config.para1_forward ~= "" then
-	vim.keymap.set({"n", "x"}, config.para1_forward, require("paramo/para1").forward)
-	vim.keymap.set("o", config.para1_forward,
+	vim.keymap.set({"n", "x"}, i.forward,
 		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para1_forward)
+			require("paramo/para1").forward()
+			if i.screen_or_logical_column == "screen" then
+				local para0 = require("paramo/para0")
+				if not para0.tail_p() then
+					para0.forward()
+				end
+			end
+		end)
+	vim.keymap.set("o", i.forward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
 		end,
 		{expr = true})
 end
--- https://vi.stackexchange.com/questions/6101/is-there-a-text-object-for-current-line/6102#6102
 
 -- # para2
 
-if config.para2_backward ~= "" then
-	vim.keymap.set({"n", "x"}, config.para2_backward, require("paramo/para2").backward)
-	vim.keymap.set("o", config.para2_backward,
+if i.type == "para2" then
+	vim.keymap.set({"n", "x"}, i.backward,
 		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para2_backward)
+			require("paramo/para2").backward()
+			if i.screen_or_logical_column == "screen" then
+				local para0 = require("paramo/para0")
+				if not para0.head_p() then
+					para0.backward()
+				end
+			end
+		end)
+	vim.keymap.set("o", i.backward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
+		end,
+		{expr = true})
+
+	vim.keymap.set({"n", "x"}, i.forward,
+		function()
+			require("paramo/para2").forward()
+			if i.screen_or_logical_column == "screen" then
+				local para0 = require("paramo/para0")
+				if not para0.tail_p() then
+					para0.forward()
+				end
+			end
+		end)
+	vim.keymap.set("o", i.forward,
+		function()
+			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
 		end,
 		{expr = true})
 end
 
-if config.para2_forward ~= "" then
-	vim.keymap.set({"n", "x"}, config.para2_forward, require("paramo/para2").forward)
-	vim.keymap.set("o", config.para2_forward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, config.para2_forward)
-		end,
-		{expr = true})
-end
 
+
+	end
 end
 
 
