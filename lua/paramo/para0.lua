@@ -5,6 +5,7 @@ M.head_p = function()
 	local textoff = wininfo.textoff
 	local width = wininfo.width
 	local width_editable_text = width - textoff
+	-- https://stackoverflow.com/questions/26315925/get-usable-window-width-in-vim-script
 	if vim.fn.virtcol(".") <= width_editable_text then
 		return true
 	else
