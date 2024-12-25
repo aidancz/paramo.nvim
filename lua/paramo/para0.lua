@@ -25,7 +25,7 @@ M.tail_p = function()
 	end
 end
 
-M.backward_one = function()
+M.backward = function()
 	vim.cmd("normal! gk")
 	if M.head_p() then
 		return
@@ -33,28 +33,12 @@ M.backward_one = function()
 	return M.backward()
 end
 
-M.forward_one = function()
+M.forward = function()
 	vim.cmd("normal! gj")
 	if M.tail_p() then
 		return
 	end
 	return M.forward()
 end
-
-M.mul_call = function(func, count)
-	for i = 1, count do
-		func()
-	end
-end
-
-M.backward = function()
-	M.mul_call(M.backward_one, vim.v.count1)
-end
-
-M.forward = function()
-	M.mul_call(M.forward_one, vim.v.count1)
-end
-
-
 
 return M

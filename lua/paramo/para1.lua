@@ -40,23 +40,15 @@ M.forward_lnum = function(lnum)
 	return M.forward_lnum(lnum + 1)
 end
 
-M.rep_call = function(func, arg, count)
-	if count == 0 then
-		return func(arg)
-	else
-		return M.rep_call(func, func(arg), (count - 1))
-	end
-end
-
 M.backward = function()
 	local lnum_current = vim.fn.line(".")
-	local lnum_destination = M.rep_call(M.backward_lnum, lnum_current, (vim.v.count1 - 1))
+	local lnum_destination = M.backward_lnum(lnum_current)
 	vim.cmd(tostring(lnum_destination))
 end
 
 M.forward = function()
 	local lnum_current = vim.fn.line(".")
-	local lnum_destination = M.rep_call(M.forward_lnum, lnum_current, (vim.v.count1 - 1))
+	local lnum_destination = M.forward_lnum(lnum_current)
 	vim.cmd(tostring(lnum_destination))
 end
 

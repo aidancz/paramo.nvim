@@ -1,5 +1,3 @@
-local M = {}
-
 local PARA2_TYPE0 = 0
 -- empty line
 local PARA2_TYPE1 = 1
@@ -9,9 +7,10 @@ local PARA2_TYPE2 = 2
 local PARA2_TYPE3 = 3
 -- beyond end char
 
+local M = {}
+local H = {}
 
-
-M.type = function(lnum, virtcol)
+H.type = function(lnum, virtcol)
 	local virtcol_max = vim.fn.virtcol({lnum, "$"})
 
 	if virtcol_max == 1 then
@@ -32,9 +31,9 @@ M.type = function(lnum, virtcol)
 end
 
 M.head_p = function(lnum, virtcol, type)
-	local a = M.type(lnum, virtcol) == type
+	local a = H.type(lnum, virtcol) == type
 	local b = lnum == 1
-	local c = M.type(lnum-1, virtcol) ~= type
+	local c = H.type(lnum-1, virtcol) ~= type
 	if a and (b or c) then
 		return true
 	else
@@ -43,9 +42,9 @@ M.head_p = function(lnum, virtcol, type)
 end
 
 M.tail_p = function(lnum, virtcol, type)
-	local a = M.type(lnum, virtcol) == type
+	local a = H.type(lnum, virtcol) == type
 	local b = lnum == vim.fn.line("$")
-	local c = M.type(lnum+1, virtcol) ~= type
+	local c = H.type(lnum+1, virtcol) ~= type
 	if a and (b or c) then
 		return true
 	else
@@ -77,28 +76,18 @@ M.forward_lnum = function(lnum, virtcol)
 	return M.forward_lnum(lnum + 1, virtcol)
 end
 
-M.rep_call = function(func, arg1, arg2, count)
-	if count == 0 then
-		return func(arg1, arg2)
-	else
-		return M.rep_call(func, func(arg1, arg2), arg2, (count - 1))
-	end
-end
-
 M.backward = function()
 	local lnum_current = vim.fn.line(".")
-	local virtcol = vim.fn.virtcol(".")
-	local lnum_destination = M.rep_call(M.backward_lnum, lnum_current, virtcol, (vim.v.count1 - 1))
+	local virtcol_current = vim.fn.virtcol(".")
+	local lnum_destination = M.backward_lnum(lnum_current, virtcol_current)
 	vim.cmd(tostring(lnum_destination))
 end
 
 M.forward = function()
 	local lnum_current = vim.fn.line(".")
-	local virtcol = vim.fn.virtcol(".")
-	local lnum_destination = M.rep_call(M.forward_lnum, lnum_current, virtcol, (vim.v.count1 - 1))
+	local virtcol_current = vim.fn.virtcol(".")
+	local lnum_destination = M.forward_lnum(lnum_current, virtcol_current)
 	vim.cmd(tostring(lnum_destination))
 end
-
-
 
 return M

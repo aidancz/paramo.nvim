@@ -1,107 +1,77 @@
 local M = {}
 
-
-
 M.setup = function(config)
 	for _, i in ipairs(config) do
 
+		local para = require("paramo/" .. i.type)
 
-
--- # para0
-
-if i.type == "para0" then
-	vim.keymap.set({"n", "x"}, i.backward, require("paramo/para0").backward)
-	vim.keymap.set("o", i.backward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
-		end,
-		{expr = true})
-
-	vim.keymap.set({"n", "x"}, i.forward, require("paramo/para0").forward)
-	vim.keymap.set("o", i.forward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
-		end,
-		{expr = true})
-end
-
--- # para1
-
-if i.type == "para1" then
-	vim.keymap.set({"n", "x"}, i.backward,
-		function()
-			require("paramo/para1").backward()
-			if i.screen_or_logical_column == "screen" then
-				local para0 = require("paramo/para0")
-				if not para0.head_p() then
-					para0.backward()
+		vim.keymap.set(
+			{"n", "x"},
+			i.backward,
+			function()
+				for i = 1, vim.v.count1 do
+					para.backward()
 				end
-			end
-		end)
-	vim.keymap.set("o", i.backward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
-		end,
-		{expr = true})
+			end,
+			{}
+		)
 
-	vim.keymap.set({"n", "x"}, i.forward,
-		function()
-			require("paramo/para1").forward()
-			if i.screen_or_logical_column == "screen" then
-				local para0 = require("paramo/para0")
-				if not para0.tail_p() then
-					para0.forward()
+		vim.keymap.set(
+			{"n", "x"},
+			i.forward,
+			function()
+				for i = 1, vim.v.count1 do
+					para.forward()
 				end
-			end
-		end)
-	vim.keymap.set("o", i.forward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
-		end,
-		{expr = true})
-end
+			end,
+			{}
+		)
 
--- # para2
+		vim.keymap.set(
+			"o",
+			i.backward,
+			function()
+				local mode = vim.api.nvim_get_mode().mode
+				local vis_mode
+				if mode == "no"    then vis_mode = "V"     end
+				if mode == "nov"   then vis_mode = "v"     end
+				if mode == "noV"   then vis_mode = "V"     end
+				if mode == "no\22" then vis_mode = "<c-v>" end
 
-if i.type == "para2" then
-	vim.keymap.set({"n", "x"}, i.backward,
-		function()
-			require("paramo/para2").backward()
-			if i.screen_or_logical_column == "screen" then
-				local para0 = require("paramo/para0")
-				if not para0.head_p() then
-					para0.backward()
-				end
-			end
-		end)
-	vim.keymap.set("o", i.backward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.backward)
-		end,
-		{expr = true})
+				local cache_selection = vim.o.selection
+				vim.o.selection = "exclusive"
+				vim.schedule(function()
+					vim.o.selection = cache_selection
+				end)
 
-	vim.keymap.set({"n", "x"}, i.forward,
-		function()
-			require("paramo/para2").forward()
-			if i.screen_or_logical_column == "screen" then
-				local para0 = require("paramo/para0")
-				if not para0.tail_p() then
-					para0.forward()
-				end
-			end
-		end)
-	vim.keymap.set("o", i.forward,
-		function()
-			return ([=[<cmd>normal V%s%s<cr>]=]):format(vim.v.count1, i.forward)
-		end,
-		{expr = true})
-end
+				return "<cmd>normal " .. vis_mode .. vim.v.count1 .. i.backward .. "<cr>"
+			end,
+			{expr = true}
+		)
 
+		vim.keymap.set(
+			"o",
+			i.forward,
+			function()
+				local mode = vim.api.nvim_get_mode().mode
+				local vis_mode
+				if mode == "no"    then vis_mode = "V"     end
+				if mode == "nov"   then vis_mode = "v"     end
+				if mode == "noV"   then vis_mode = "V"     end
+				if mode == "no\22" then vis_mode = "<c-v>" end
 
+				local cache_selection = vim.o.selection
+				vim.o.selection = "exclusive"
+				vim.schedule(function()
+					vim.o.selection = cache_selection
+				end)
+
+				return "<cmd>normal " .. vis_mode .. vim.v.count1 .. i.forward .. "<cr>"
+			end,
+			{expr = true}
+		)
 
 	end
 end
-
-
 
 return M
