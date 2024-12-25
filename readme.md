@@ -36,14 +36,9 @@ para2 is like the `E` and `B` motions but vertical
 
 please `:set cursorcolumn` to understand the concept of para2
 
-# install
+# setup
 
-## general
-
-1. install
-2. setup
-
-### setup example 1:
+## setup example 1:
 
 ```
 require("paramo").setup({
@@ -54,20 +49,18 @@ require("paramo").setup({
 	},
 	{
 		type = "para1",
-		screen_or_logical_column = "screen",
 		backward = "(",
 		forward = ")",
 	},
 	{
 		type = "para2",
-		screen_or_logical_column = "screen",
 		backward = "<home>",
 		forward = "<end>",
 	},
 })
 ```
 
-### setup example 2:
+## setup example 2:
 
 if you want `para1` only:
 
@@ -75,49 +68,15 @@ if you want `para1` only:
 require("paramo").setup({
 	{
 		type = "para1",
-		screen_or_logical_column = "screen",
 		backward = "{",
 		forward = "}",
 	},
 })
 ```
 
-### setup example 3:
+## setup example 3:
 
-if you want to test the difference between `screen_or_logical_column = "screen"` and `screen_or_logical_column = "logical"`, you may:
-
-```
-require("paramo").setup({
-	{
-		type = "para1",
-		screen_or_logical_column = "screen",
-		backward = "{",
-		forward = "}",
-	},
-	{
-		type = "para1",
-		screen_or_logical_column = "logical",
-		backward = "(",
-		forward = ")",
-	},
-})
-```
-
-basically
-
-the option `screen_or_logical_column` is meaningful only when lines are wrapped
-
-the option `screen_or_logical_column` controls whether the cursor should stay on the screen column or the logical column
-
-as a result
-
-`para0` does not have this option
-
-`para1` has this option
-
-`para2` has this option
-
-## lazy.nvim
+if you are using `lazy.nvim`:
 
 ```
 {
@@ -131,13 +90,11 @@ as a result
 			},
 			{
 				type = "para1",
-				screen_or_logical_column = "screen",
 				backward = "(",
 				forward = ")",
 			},
 			{
 				type = "para2",
-				screen_or_logical_column = "screen",
 				backward = "<home>",
 				forward = "<end>",
 			},
@@ -145,3 +102,9 @@ as a result
 	end,
 }
 ```
+
+# note
+
+this plugin places the cursor on the logical line rather than the screen line
+
+if you want to place the cursor on the screen line, the code of `para0` might be useful to you
