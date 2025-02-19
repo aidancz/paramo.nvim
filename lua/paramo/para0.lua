@@ -25,20 +25,27 @@ M.tail_p = function()
 	end
 end
 
-M.backward = function()
-	vim.cmd("normal! gk")
-	if M.head_p() then
-		return
-	end
-	return M.backward()
+M.head_or_tail_p = function()
+	return M.head_p() or M.tail_p()
 end
 
-M.forward = function()
+M.backward = function(terminate_p)
+	vim.cmd("normal! gk")
+	if terminate_p() then return end
+	return M.backward(terminate_p)
+end
+
+M.forward = function(terminate_p)
 	vim.cmd("normal! gj")
-	if M.tail_p() then
-		return
-	end
-	return M.forward()
+	if terminate_p() then return end
+	return M.forward(terminate_p)
+end
+
+-- # help functions for other paramo:
+
+M.ensure_head = function()
+	if M.head_p() then return end
+	M.backward(M.head_p)
 end
 
 return M
