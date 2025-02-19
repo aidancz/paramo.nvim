@@ -1,40 +1,45 @@
-paramo.nvim provides 3 kinds of paragraph motions:
+paramo.nvim provides 4 kinds of paragraph motions:
 
 - para0
 - para1
 - para2
+- para3
 
 # demo
+
+a paragraph is essentially a sequence of lines
+
+i refer to the first line as the "head" and the last line as the "tail"
+
+this plugin makes it easy to navigate to both the head and tail
 
 ## para0
 
 ![](assets/para0.png)
 
-how can we move cursor to the last screen line of current logical line?
-
-para0 is here for you!
+para0 treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
 
 ## para1
 
 ![](assets/para1.png)
 
-how can we move cursor to the last line above empty line?
-
-para1 is here for you!
-
-para1 is like the `{` and `}` motions but before the empty line
+para1 treats a sequence of non-empty lines as a paragraph
 
 ## para2
 
 ![](assets/para2.png)
 
-how can we move cursor to the last line that has visible character?
+para2 treats a sequence of empty lines as a paragraph
 
-para2 is here for you!
+## para3
 
-para2 is like the `E` and `B` motions but vertical
+![](assets/para3.png)
 
-please `:set cursorcolumn` to understand the concept of para2
+para3 treats a sequence of lines containing characters in the cursor's column as a paragraph
+
+para3 is like the `E` and `B` motions but vertical
+
+to understand the concept of para3, you may want to `:set cursorcolumn`
 
 # setup
 
@@ -43,68 +48,44 @@ please `:set cursorcolumn` to understand the concept of para2
 ```
 require("paramo").setup({
 	{
-		type = "para0",
-		backward = "{",
-		forward = "}",
-	},
-	{
 		type = "para1",
-		backward = "(",
-		forward = ")",
+		backward = {
+			head = "<a-b>",
+			tail = "<a-g>",
+			head_or_tail = "<a-p>",
+		},
+		forward = {
+			head = "<a-w>",
+			tail = "<a-e>",
+			head_or_tail = "<a-n>",
+		},
 	},
 	{
-		type = "para2",
-		backward = "<home>",
-		forward = "<end>",
+		type = "para3",
+		backward = {
+			head_or_tail = "<a-k>",
+		},
+		forward = {
+			head_or_tail = "<a-j>",
+		},
 	},
 })
 ```
 
 ## setup example 2:
 
-if you want `para1` only:
+you can simulate the builtin `{` and `}` motions with:
 
 ```
 require("paramo").setup({
 	{
-		type = "para1",
-		backward = "{",
-		forward = "}",
+		type = "para2",
+		backward = {
+			tail = "{",
+		},
+		forward = {
+			head = "}",
+		},
 	},
 })
 ```
-
-## setup example 3:
-
-if you are using `lazy.nvim`:
-
-```
-{
-	"aidancz/paramo.nvim",
-	config = function()
-		require("paramo").setup({
-			{
-				type = "para0",
-				backward = "{",
-				forward = "}",
-			},
-			{
-				type = "para1",
-				backward = "(",
-				forward = ")",
-			},
-			{
-				type = "para2",
-				backward = "<home>",
-				forward = "<end>",
-			},
-		})
-	end,
-}
-```
-
-# note
-
-this plugin places the cursor on the logical line rather than the screen line
-
-if you want to place the cursor on the screen line, the code of `para0` might be useful to you
