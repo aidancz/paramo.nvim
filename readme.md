@@ -89,3 +89,43 @@ require("paramo").setup({
 	},
 })
 ```
+
+## setup example 3:
+
+this is my current setup:
+
+```
+require("paramo").setup({
+	{
+		type = "para1",
+		backward = {
+			head = "<a-b>",
+			tail = "<a-g>",
+		},
+		forward = {
+			head = "<a-w>",
+			tail = "<a-e>",
+		},
+	},
+	{
+		type = "para2",
+		backward = {
+			head = "(",
+			tail = "{",
+		},
+		forward = {
+			head = "}",
+			tail = ")",
+		},
+	},
+	{
+		type = "para3",
+		backward = {
+			head_or_tail = "<pageup>",
+		},
+		forward = {
+			head_or_tail = "<pagedown>",
+		},
+	},
+})
+```
