@@ -2,10 +2,12 @@ local M = {}
 
 local para_type = require("paramo/parah").type
 
-M.head_p = function()
-	local lnum = vim.fn.line(".")
-	local virtcol = vim.fn.virtcol(".")
-	local type = 2
+M.head_p = function(lnum, col, type)
+	lnum = lnum or vim.fn.line(".")
+	col = col or vim.fn.col(".")
+	type = type or 2
+
+	local virtcol = vim.fn.virtcol({lnum, col})
 
 	local a = para_type(lnum, virtcol) == type
 	local b = lnum == 1
@@ -17,10 +19,12 @@ M.head_p = function()
 	end
 end
 
-M.tail_p = function()
-	local lnum = vim.fn.line(".")
-	local virtcol = vim.fn.virtcol(".")
-	local type = 2
+M.tail_p = function(lnum, col, type)
+	lnum = lnum or vim.fn.line(".")
+	col = col or vim.fn.col(".")
+	type = type or 2
+
+	local virtcol = vim.fn.virtcol({lnum, col})
 
 	local a = para_type(lnum, virtcol) == type
 	local b = lnum == vim.fn.line("$")

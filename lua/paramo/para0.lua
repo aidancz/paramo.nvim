@@ -1,24 +1,37 @@
 local M = {}
 
-M.head_p = function()
+M.head_p = function(lnum, col)
+	lnum = lnum or vim.fn.line(".")
+	col = col or vim.fn.col(".")
+
+	local virtcol = vim.fn.virtcol({lnum, col})
+
 	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
 	local textoff = wininfo.textoff
 	local width = wininfo.width
 	local width_editable_text = width - textoff
 	-- https://stackoverflow.com/questions/26315925/get-usable-window-width-in-vim-script
-	if vim.fn.virtcol(".") <= width_editable_text then
+
+	if virtcol <= width_editable_text then
 		return true
 	else
 		return false
 	end
 end
 
-M.tail_p = function()
+M.tail_p = function(lnum, col)
+	lnum = lnum or vim.fn.line(".")
+	col = col or vim.fn.col(".")
+
+	local virtcol = vim.fn.virtcol({lnum, col})
+	local virtcol_max = vim.fn.virtcol({lnum, "$"})
+
 	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
 	local textoff = wininfo.textoff
 	local width = wininfo.width
 	local width_editable_text = width - textoff
-	if vim.fn.virtcol(".") >= vim.fn.virtcol("$") - (vim.fn.virtcol("$") % width_editable_text) + 1 then
+
+	if virtcol >= virtcol_max - (virtcol_max % width_editable_text) + 1 then
 		return true
 	else
 		return false

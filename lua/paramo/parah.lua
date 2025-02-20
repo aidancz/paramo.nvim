@@ -1,17 +1,17 @@
 -- help functions
 
-local PARA_TYPE0 = 0
--- empty line
-local PARA_TYPE1 = 1
--- before first non-blank char
-local PARA_TYPE2 = 2
--- first non-blank char to end char
-local PARA_TYPE3 = 3
--- beyond end char
-
 local M = {}
 
 M.type = function(lnum, virtcol)
+	local PARA_TYPE0 = 0
+	-- empty line
+	local PARA_TYPE1 = 1
+	-- before first non-blank char
+	local PARA_TYPE2 = 2
+	-- first non-blank char to end char
+	local PARA_TYPE3 = 3
+	-- beyond end char
+
 	local virtcol_max = vim.fn.virtcol({lnum, "$"})
 
 	if virtcol_max == 1 then

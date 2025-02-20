@@ -1,7 +1,7 @@
 local M = {}
 
-M.head_p = function()
-	local lnum = vim.fn.line(".")
+M.head_p = function(lnum)
+	lnum = lnum or vim.fn.line(".")
 
 	if lnum == 1 then
 		return true
@@ -12,8 +12,8 @@ M.head_p = function()
 	return false
 end
 
-M.tail_p = function()
-	local lnum = vim.fn.line(".")
+M.tail_p = function(lnum)
+	lnum = lnum or vim.fn.line(".")
 
 	if lnum == vim.fn.line("$") then
 		return true
