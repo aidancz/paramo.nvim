@@ -1,27 +1,40 @@
 local M = {}
+local H = require("paramo/parah")
 
 M.head_p = function(lnum)
 	lnum = lnum or vim.fn.line(".")
 
-	if lnum == 1 then
+	if
+		not H.empty_p(lnum)
+		and
+		(
+			H.first_p(lnum)
+			or
+			H.empty_p(lnum - 1)
+		)
+	then
 		return true
+	else
+		return false
 	end
-	if vim.fn.getline(lnum) ~= "" and vim.fn.getline(lnum - 1) == "" then
-		return true
-	end
-	return false
 end
 
 M.tail_p = function(lnum)
 	lnum = lnum or vim.fn.line(".")
 
-	if lnum == vim.fn.line("$") then
+	if
+		not H.empty_p(lnum)
+		and
+		(
+			H.last_p(lnum)
+			or
+			H.empty_p(lnum + 1)
+		)
+	then
 		return true
+	else
+		return false
 	end
-	if vim.fn.getline(lnum) ~= "" and vim.fn.getline(lnum + 1) == "" then
-		return true
-	end
-	return false
 end
 
 M.head_or_tail_p = function()

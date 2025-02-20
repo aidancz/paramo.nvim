@@ -1,35 +1,42 @@
 local M = {}
+local H = require("paramo/parah")
 
-local para_type = require("paramo/parah").type
-
-M.head_p = function(lnum, col, type)
+M.head_p = function(lnum, col)
 	lnum = lnum or vim.fn.line(".")
 	col = col or vim.fn.col(".")
-	type = type or 2
 
-	local virtcol = vim.fn.virtcol({lnum, col})
+	local virtcol = H.virtcol(lnum, col)
 
-	local a = para_type(lnum, virtcol) == type
-	local b = lnum == 1
-	local c = para_type(lnum-1, virtcol) ~= type
-	if a and (b or c) then
+	if
+		not H.empty_virtcol_p(lnum, virtcol)
+		and
+		(
+			H.first_p(lnum)
+			or
+			H.empty_virtcol_p(lnum - 1, virtcol)
+		)
+	then
 		return true
 	else
 		return false
 	end
 end
 
-M.tail_p = function(lnum, col, type)
+M.tail_p = function(lnum, col)
 	lnum = lnum or vim.fn.line(".")
 	col = col or vim.fn.col(".")
-	type = type or 2
 
-	local virtcol = vim.fn.virtcol({lnum, col})
+	local virtcol = H.virtcol(lnum, col)
 
-	local a = para_type(lnum, virtcol) == type
-	local b = lnum == vim.fn.line("$")
-	local c = para_type(lnum+1, virtcol) ~= type
-	if a and (b or c) then
+	if
+		not H.empty_virtcol_p(lnum, virtcol)
+		and
+		(
+			H.last_p(lnum)
+			or
+			H.empty_virtcol_p(lnum + 1, virtcol)
+		)
+	then
 		return true
 	else
 		return false

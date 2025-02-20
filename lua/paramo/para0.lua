@@ -1,16 +1,12 @@
 local M = {}
+local H = require("paramo/parah")
 
 M.head_p = function(lnum, col)
 	lnum = lnum or vim.fn.line(".")
 	col = col or vim.fn.col(".")
 
-	local virtcol = vim.fn.virtcol({lnum, col})
-
-	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
-	local textoff = wininfo.textoff
-	local width = wininfo.width
-	local width_editable_text = width - textoff
-	-- https://stackoverflow.com/questions/26315925/get-usable-window-width-in-vim-script
+	local virtcol = H.virtcol(lnum, col)
+	local width_editable_text = H.width_editable_text()
 
 	if virtcol <= width_editable_text then
 		return true
@@ -23,13 +19,9 @@ M.tail_p = function(lnum, col)
 	lnum = lnum or vim.fn.line(".")
 	col = col or vim.fn.col(".")
 
-	local virtcol = vim.fn.virtcol({lnum, col})
-	local virtcol_max = vim.fn.virtcol({lnum, "$"})
-
-	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
-	local textoff = wininfo.textoff
-	local width = wininfo.width
-	local width_editable_text = width - textoff
+	local virtcol = H.virtcol(lnum, col)
+	local virtcol_max = H.virtcol_max(lnum)
+	local width_editable_text = H.width_editable_text()
 
 	if virtcol >= virtcol_max - (virtcol_max % width_editable_text) + 1 then
 		return true

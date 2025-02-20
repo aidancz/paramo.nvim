@@ -2,52 +2,69 @@
 
 local M = {}
 
-M.type = function(lnum, virtcol)
-	local PARA_TYPE0 = 0
-	-- empty line
-	local PARA_TYPE1 = 1
-	-- before first non-blank char
-	local PARA_TYPE2 = 2
-	-- first non-blank char to end char
-	local PARA_TYPE3 = 3
-	-- beyond end char
+M.virtcol = function(lnum, col)
+	return vim.fn.virtcol({lnum, col})
+end
 
-	local virtcol_max = vim.fn.virtcol({lnum, "$"})
+M.virtcol_max = function(lnum)
+	return vim.fn.virtcol({lnum, "$"})
+end
 
-	if virtcol_max == 1 then
-		return PARA_TYPE0
-	elseif virtcol >= virtcol_max then
-		return PARA_TYPE3
+M.width_editable_text = function()
+	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
+	local textoff = wininfo.textoff
+	local width = wininfo.width
+	local width_editable_text = width - textoff
+	-- https://stackoverflow.com/questions/26315925/get-usable-window-width-in-vim-script
+
+	return width_editable_text
+end
+
+M.empty_p = function(lnum)
+	return vim.fn.getline(lnum) == ""
+end
+
+M.first_p = function(lnum)
+	return lnum == 1
+end
+
+M.last_p = function(lnum)
+	return lnum == vim.fn.line("$")
+end
+
+M.empty_virtcol_p = function(lnum, virtcol)
+	local virtcol_max = M.virtcol_max(lnum)
+
+	if virtcol >= virtcol_max then
+		return true
+		-- beyond end char
 	else
 		local col = vim.fn.virtcol2col(0, lnum, virtcol)
 		local char = vim.api.nvim_buf_get_text(0, lnum-1, col-1, lnum-1, col-1+1, {})[1]
 		local prestr = vim.api.nvim_buf_get_text(0, lnum-1, 0, lnum-1, col-1+1, {})[1]
 
 		if (char == " " or char == "\t") and prestr:match("^%s+$") ~= nil then
-			return PARA_TYPE1
+			return true
+			-- before first non-blank char
 		else
-			return PARA_TYPE2
+			return false
+			-- first non-blank char to end char
 		end
 	end
 end
 
 M.backward = function(terminate_p, first_call)
 	if first_call then
-		local terminate_p_origin = terminate_p
-		terminate_p = function()
-			return
-			terminate_p_origin()
-			or
-			vim.fn.line(".") == 1
-		end
+		require("paramo/para0").ensure_head()
 		require("paramo/para0").backward(require("paramo/para0").head_p)
-		if terminate_p() then
-			require("paramo/para0").ensure_head()
-			return
-		end
+	else
+		vim.cmd("normal! gk")
 	end
-	vim.cmd("normal! gk")
-	if terminate_p() then
+	if
+		terminate_p()
+		or
+		M.first_p()
+	then
 		require("paramo/para0").ensure_head()
 		return
 	end
@@ -56,21 +73,16 @@ end
 
 M.forward = function(terminate_p, first_call)
 	if first_call then
-		local terminate_p_origin = terminate_p
-		terminate_p = function()
-			return
-			terminate_p_origin()
-			or
-			vim.fn.line(".") == vim.fn.line("$")
-		end
+		require("paramo/para0").ensure_head()
 		require("paramo/para0").forward(require("paramo/para0").head_p)
-		if terminate_p() then
-			require("paramo/para0").ensure_head()
-			return
-		end
+	else
+		vim.cmd("normal! gj")
 	end
-	vim.cmd("normal! gj")
-	if terminate_p() then
+	if
+		terminate_p()
+		or
+		M.last_p()
+	then
 		require("paramo/para0").ensure_head()
 		return
 	end
