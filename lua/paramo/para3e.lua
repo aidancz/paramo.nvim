@@ -7,7 +7,7 @@ M.head_p = function(lnum)
 	local indent = H.indent(vim.fn.line("."))
 
 	if
-		H.indent(lnum) > indent
+		H.indent(lnum) < indent
 		and
 		(
 			H.first_p(lnum)
@@ -25,7 +25,7 @@ M.tail_p = function(lnum)
 	local indent = H.indent(vim.fn.line("."))
 
 	if
-		H.indent(lnum) > indent
+		H.indent(lnum) < indent
 		and
 		(
 			H.last_p(lnum)

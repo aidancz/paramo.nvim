@@ -12,7 +12,7 @@ M.head_p = function(lnum)
 		(
 			H.first_p(lnum)
 			or
-			H.indent(lnum - 1) ~= H.indent(lnum)
+			H.indent(lnum - 1) < H.indent(lnum)
 		)
 	then
 		return true
@@ -30,7 +30,7 @@ M.tail_p = function(lnum)
 		(
 			H.last_p(lnum)
 			or
-			H.indent(lnum + 1) ~= H.indent(lnum)
+			H.indent(lnum + 1) < H.indent(lnum)
 		)
 	then
 		return true
