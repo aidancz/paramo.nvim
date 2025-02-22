@@ -13,7 +13,7 @@ M.setup = function(config)
 					local f = load("return para." .. head_or_tail .. "_p")
 					setfenv(f, {para = para})
 					for n = 1, vim.v.count1 do
-						para.backward(f(), true)
+						para.backward(f())
 					end
 				end,
 				{}
@@ -50,7 +50,7 @@ M.setup = function(config)
 					local f = load("return para." .. head_or_tail .. "_p")
 					setfenv(f, {para = para})
 					for n = 1, vim.v.count1 do
-						para.forward(f(), true)
+						para.forward(f())
 					end
 				end,
 				{}

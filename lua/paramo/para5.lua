@@ -5,12 +5,12 @@ local H = require("paramo/parah")
 
 M.head_p = function(lnum)
 	if
-		not H.empty_p(lnum)
+		H.indent(lnum) ~= -1
 		and
 		(
 			H.first_p(lnum)
 			or
-			H.empty_p(lnum - 1)
+			H.indent(lnum - 1) ~= H.indent(lnum)
 		)
 	then
 		return true
@@ -21,12 +21,12 @@ end
 
 M.tail_p = function(lnum)
 	if
-		not H.empty_p(lnum)
+		H.indent(lnum) ~= -1
 		and
 		(
 			H.last_p(lnum)
 			or
-			H.empty_p(lnum + 1)
+			H.indent(lnum + 1) ~= H.indent(lnum)
 		)
 	then
 		return true
@@ -68,8 +68,7 @@ M.backward = function(terminate_p)
 
 	local lnum1 = M.backward_pos(lnum0, terminate_p)
 	if lnum1 then
-		require("paramo/para0").ensure_head()
-		vim.cmd(tostring(lnum1))
+		H.set_cursor(lnum1, H.indent(lnum1) + 1)
 	end
 end
 
@@ -78,8 +77,7 @@ M.forward = function(terminate_p)
 
 	local lnum1 = M.forward_pos(lnum0, terminate_p)
 	if lnum1 then
-		require("paramo/para0").ensure_head()
-		vim.cmd(tostring(lnum1))
+		H.set_cursor(lnum1, H.indent(lnum1) + 1)
 	end
 end
 

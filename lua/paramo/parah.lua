@@ -1,16 +1,22 @@
 -- help functions
 
-local M = {}
+local H = {}
 
-M.virtcol = function(lnum, col)
-	return vim.fn.virtcol({lnum, col})
+H.virtcol_cursor = function()
+	return vim.fn.virtcol(".", true)[1]
 end
 
-M.virtcol_max = function(lnum)
-	return vim.fn.virtcol({lnum, "$"})
+H.virtcol_max_real = function(lnum)
+-- HACK: this is REAL virtcol_max, use it with care
+	if vim.o.list and vim.opt.listchars:get().eol ~= nil then
+		return vim.fn.virtcol({lnum, "$"})
+	else
+		return
+		math.max(1, vim.fn.virtcol({lnum, "$"}) - 1)
+	end
 end
 
-M.width_editable_text = function()
+H.width_editable_text = function()
 	local wininfo = vim.fn.getwininfo(vim.fn.win_getid())[1]
 	local textoff = wininfo.textoff
 	local width = wininfo.width
@@ -20,73 +26,129 @@ M.width_editable_text = function()
 	return width_editable_text
 end
 
-M.empty_p = function(lnum)
+H.virtcol_quotient = function(virtcol)
+	local width_editable_text = H.width_editable_text()
+	-- local virtcol_quotient = virtcol // width_editable_text
+	local virtcol_quotient = math.floor(virtcol / width_editable_text)
+	return virtcol_quotient
+end
+
+H.virtcol_remainder = function(virtcol)
+	local width_editable_text = H.width_editable_text()
+	local virtcol_remainder = virtcol % width_editable_text
+	return virtcol_remainder
+end
+
+H.backward_next = function(lnum, virtcol)
+	local width_editable_text = H.width_editable_text()
+	local virtcol_quotient = H.virtcol_quotient(virtcol)
+	local virtcol_remainder = H.virtcol_remainder(virtcol)
+
+	if virtcol_quotient > 0 then
+		return lnum, virtcol - width_editable_text
+	end
+	if lnum == 1 then
+		return nil, nil
+	end
+	return lnum - 1, H.virtcol_quotient(H.virtcol_max_real(lnum - 1)) * width_editable_text + virtcol_remainder
+end
+
+H.forward_next = function(lnum, virtcol)
+	local width_editable_text = H.width_editable_text()
+	local virtcol_quotient = H.virtcol_quotient(virtcol)
+	local virtcol_remainder = H.virtcol_remainder(virtcol)
+
+	if virtcol_quotient < H.virtcol_quotient(H.virtcol_max_real(lnum)) then
+		return lnum, virtcol + width_editable_text
+	end
+	if lnum == vim.fn.line("$") then
+		return nil, nil
+	end
+	return lnum + 1, virtcol_remainder
+end
+
+H.set_cursor = function(lnum, virtcol)
+	local col = vim.fn.virtcol2col(0, lnum, virtcol)
+	if virtcol >= vim.fn.virtcol({lnum, "$"}) then
+	-- HACK: fix virtcol2col
+		col = col + 1
+	end
+
+	local off
+	local virtcol_max = vim.fn.virtcol({lnum, "$"})
+	if virtcol > virtcol_max then
+		off = virtcol - virtcol_max
+	else
+		off = 0
+	end
+
+	-- local curswant = H.virtcol_remainder(virtcol)
+	-- local curswant = vim.fn.getcurpos()[5]
+	local curswant = virtcol
+
+	vim.fn.cursor({lnum, col, off, curswant})
+end
+
+
+
+H.empty_p = function(lnum)
 	return vim.fn.getline(lnum) == ""
 end
 
-M.first_p = function(lnum)
+H.first_p = function(lnum)
 	return lnum == 1
 end
 
-M.last_p = function(lnum)
+H.last_p = function(lnum)
 	return lnum == vim.fn.line("$")
 end
 
-M.empty_virtcol_p = function(lnum, virtcol)
-	local virtcol_max = M.virtcol_max(lnum)
 
-	if virtcol >= virtcol_max then
+
+H.virtcol_first_nonblank = function(lnum)
+	local line = vim.fn.getline(lnum)
+	local col1, col2 = string.find(line, "%S")
+	if col1 == nil then return nil end
+	return vim.fn.virtcol({lnum, col1}, true)[1]
+end
+
+H.empty_virtcol_p = function(lnum, virtcol)
+	local virtcol_max = vim.fn.virtcol({lnum, "$"})
+	local virtcol_first_nonblank = H.virtcol_first_nonblank(lnum)
+
+	if virtcol_first_nonblank == nil then
+	-- empty / contain only whitespace
 		return true
-		-- beyond end char
-	else
-		local col = vim.fn.virtcol2col(0, lnum, virtcol)
-		local char = vim.api.nvim_buf_get_text(0, lnum-1, col-1, lnum-1, col-1+1, {})[1]
-		local prestr = vim.api.nvim_buf_get_text(0, lnum-1, 0, lnum-1, col-1+1, {})[1]
-
-		if (char == " " or char == "\t") and prestr:match("^%s+$") ~= nil then
-			return true
-			-- before first non-blank char
-		else
-			return false
-			-- first non-blank char to end char
-		end
 	end
+	if virtcol < virtcol_first_nonblank then
+	-- before first non-blank char
+		return true
+	end
+	if virtcol >= virtcol_max then
+	-- beyond end char
+		return true
+	end
+	return false
 end
 
-M.backward = function(terminate_p, first_call)
-	if first_call then
-		require("paramo/para0").ensure_head()
-		require("paramo/para0").backward(require("paramo/para0").head_p)
+
+
+H.indent = function(lnum)
+	local virtcol_first_nonblank = H.virtcol_first_nonblank(lnum)
+
+	local indent
+	if virtcol_first_nonblank then
+	-- has non-blank char
+		indent = virtcol_first_nonblank - 1
+	elseif H.empty_p(lnum) then
+	-- empty
+		indent = -1
 	else
-		vim.cmd("normal! gk")
+	-- only whitespace
+		indent = vim.fn.virtcol({lnum, "$"}) - 1
 	end
-	if
-		terminate_p()
-		or
-		M.first_p()
-	then
-		require("paramo/para0").ensure_head()
-		return
-	end
-	return M.backward(terminate_p)
+
+	return indent
 end
 
-M.forward = function(terminate_p, first_call)
-	if first_call then
-		require("paramo/para0").ensure_head()
-		require("paramo/para0").forward(require("paramo/para0").head_p)
-	else
-		vim.cmd("normal! gj")
-	end
-	if
-		terminate_p()
-		or
-		M.last_p()
-	then
-		require("paramo/para0").ensure_head()
-		return
-	end
-	return M.forward(terminate_p)
-end
-
-return M
+return H
