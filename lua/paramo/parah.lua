@@ -133,6 +133,26 @@ end
 
 
 
+H.any = function(a, b)
+	return true
+end
+
+H.eq = function(a, b)
+	return a == b
+end
+
+H.neq = function(a, b)
+	return a ~= b
+end
+
+H.gt = function(a, b)
+	return a > b
+end
+
+H.lt = function(a, b)
+	return a < b
+end
+
 H.indent = function(lnum)
 	local virtcol_first_nonblank = H.virtcol_first_nonblank(lnum)
 

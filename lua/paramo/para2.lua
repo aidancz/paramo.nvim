@@ -1,5 +1,22 @@
 local M = {}
 local H = require("paramo/parah")
+local HR = {} -- help function redefine
+
+-- # config & setup
+
+M.config = {
+	empty = false,
+}
+
+M.setup = function(config)
+	M.config = vim.tbl_deep_extend("force", M.config, config or {})
+
+	if not M.config.empty then
+		HR.empty_virtcol_p = H.empty_virtcol_p
+	else
+		HR.empty_virtcol_p = function(lnum, virtcol) return not H.empty_virtcol_p(lnum, virtcol) end
+	end
+end
 
 -- # head & tail
 
@@ -7,12 +24,12 @@ M.head_p = function(lnum, virtcol)
 	local lnum_next, virtcol_next = H.backward_next(lnum, virtcol)
 
 	if
-		not H.empty_virtcol_p(lnum, virtcol)
+		not HR.empty_virtcol_p(lnum, virtcol)
 		and
 		(
 			lnum_next == nil
 			or
-			H.empty_virtcol_p(lnum_next, virtcol_next)
+			HR.empty_virtcol_p(lnum_next, virtcol_next)
 		)
 	then
 		return true
@@ -25,12 +42,12 @@ M.tail_p = function(lnum, virtcol)
 	local lnum_next, virtcol_next = H.forward_next(lnum, virtcol)
 
 	if
-		not H.empty_virtcol_p(lnum, virtcol)
+		not HR.empty_virtcol_p(lnum, virtcol)
 		and
 		(
 			lnum_next == nil
 			or
-			H.empty_virtcol_p(lnum_next, virtcol_next)
+			HR.empty_virtcol_p(lnum_next, virtcol_next)
 		)
 	then
 		return true

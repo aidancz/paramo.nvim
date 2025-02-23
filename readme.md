@@ -14,6 +14,8 @@ i refer to the first line as the "head" and the last line as the "tail"
 
 this plugin makes it easy to navigate to both the head and tail
 
+WORKS VERY WELL VIRTUALEDIT WRAP
+
 in the image below, i use continuous blue or yellow to mark the paragraphs that the specific "paramo" considers
 
 ## para0

@@ -4,6 +4,7 @@ M.setup = function(config)
 	for _, i in ipairs(config) do
 
 		local para = require("paramo/" .. i.type)
+		para.setup(i.type_config)
 
 		for head_or_tail, keymap in pairs(i.backward or {}) do
 			vim.keymap.set(

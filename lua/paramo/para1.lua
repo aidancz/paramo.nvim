@@ -1,18 +1,33 @@
 local M = {}
 local H = require("paramo/parah")
+local HR = {} -- help function redefine
+
+-- # config & setup
+
+M.config = {
+	empty = false,
+}
+
+M.setup = function(config)
+	M.config = vim.tbl_deep_extend("force", M.config, config or {})
+
+	if not M.config.empty then
+		HR.empty_p = H.empty_p
+	else
+		HR.empty_p = function(lnum) return not H.empty_p(lnum) end
+	end
+end
 
 -- # head & tail
 
 M.head_p = function(lnum)
-	local indent = H.indent(vim.fn.line("."))
-
 	if
-		H.indent(lnum) < indent
+		not HR.empty_p(lnum)
 		and
 		(
 			H.first_p(lnum)
 			or
-			H.indent(lnum - 1) < H.indent(lnum)
+			HR.empty_p(lnum - 1)
 		)
 	then
 		return true
@@ -22,15 +37,13 @@ M.head_p = function(lnum)
 end
 
 M.tail_p = function(lnum)
-	local indent = H.indent(vim.fn.line("."))
-
 	if
-		H.indent(lnum) < indent
+		not HR.empty_p(lnum)
 		and
 		(
 			H.last_p(lnum)
 			or
-			H.indent(lnum + 1) < H.indent(lnum)
+			HR.empty_p(lnum + 1)
 		)
 	then
 		return true
@@ -72,7 +85,8 @@ M.backward = function(terminate_p)
 
 	local lnum1 = M.backward_pos(lnum0, terminate_p)
 	if lnum1 then
-		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
+		require("paramo/para0").ensure_head()
+		vim.cmd(tostring(lnum1))
 	end
 end
 
@@ -81,7 +95,8 @@ M.forward = function(terminate_p)
 
 	local lnum1 = M.forward_pos(lnum0, terminate_p)
 	if lnum1 then
-		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
+		require("paramo/para0").ensure_head()
+		vim.cmd(tostring(lnum1))
 	end
 end
 
