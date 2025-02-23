@@ -59,7 +59,7 @@ end
 -- # backward_pos & forward_pos
 
 M.backward_pos = function(lnum, terminate_p)
-	if lnum == 0 then
+	if lnum == 1 then
 		return nil
 	end
 	if terminate_p(lnum - 1) then
@@ -69,7 +69,7 @@ M.backward_pos = function(lnum, terminate_p)
 end
 
 M.forward_pos = function(lnum, terminate_p)
-	if lnum == vim.fn.line("$") + 1 then
+	if lnum == vim.fn.line("$") then
 		return nil
 	end
 	if terminate_p(lnum + 1) then
