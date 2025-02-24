@@ -6,16 +6,6 @@ local HR = {} -- help function redefine
 
 M.config = {
 	include_empty = false,
-	indent = "eq",
---[[
-	indent = "eq", -- equal indent to current
-	indent = "gt", -- greater indent than current
-	indent = "lt", -- less indent than current
-	indent = "neq", -- not eq
-	indent = "ngt", -- not gt
-	indent = "nlt", -- not lt
-	indent = "any", -- any indent
---]]
 }
 
 M.setup = function(config)
@@ -37,10 +27,6 @@ M.setup = function(config)
 			return indent
 		end
 	end
-
-	local f = load("return H." .. M.config.indent)
-	setfenv(f, {H = H})
-	HR.eq = f()
 end
 
 -- # head & tail
@@ -49,14 +35,12 @@ M.head_p = function(lnum)
 	local indent_cursor = HR.indent(vim.fn.line("."))
 
 	if
+		HR.indent(lnum) >= indent_cursor
+		and
 		(
 			H.first_p(lnum)
 			or
-			H.neq(HR.indent(lnum - 1), HR.indent(lnum))
-		)
-		and
-		(
-			HR.eq(HR.indent(lnum), indent_cursor)
+			HR.indent(lnum - 1) < indent_cursor
 		)
 	then
 		return true
@@ -69,14 +53,12 @@ M.tail_p = function(lnum)
 	local indent_cursor = HR.indent(vim.fn.line("."))
 
 	if
+		HR.indent(lnum) >= indent_cursor
+		and
 		(
 			H.last_p(lnum)
 			or
-			H.neq(HR.indent(lnum + 1), HR.indent(lnum))
-		)
-		and
-		(
-			HR.eq(HR.indent(lnum), indent_cursor)
+			HR.indent(lnum + 1) < indent_cursor
 		)
 	then
 		return true

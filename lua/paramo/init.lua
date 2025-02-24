@@ -4,13 +4,14 @@ M.setup = function(config)
 	for _, i in ipairs(config) do
 
 		local para = require("paramo/" .. i.type)
-		para.setup(i.type_config)
 
 		for head_or_tail, keymap in pairs(i.backward or {}) do
 			vim.keymap.set(
 				{"n", "x"},
 				keymap,
 				function()
+					para.setup(i.type_config)
+
 					local f = load("return para." .. head_or_tail .. "_p")
 					setfenv(f, {para = para})
 					for n = 1, vim.v.count1 do
@@ -48,6 +49,8 @@ M.setup = function(config)
 				{"n", "x"},
 				keymap,
 				function()
+					para.setup(i.type_config)
+
 					local f = load("return para." .. head_or_tail .. "_p")
 					setfenv(f, {para = para})
 					for n = 1, vim.v.count1 do

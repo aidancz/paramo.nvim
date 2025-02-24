@@ -133,16 +133,8 @@ end
 
 
 
-H.any = function(a, b)
-	return true
-end
-
 H.eq = function(a, b)
 	return a == b
-end
-
-H.neq = function(a, b)
-	return a ~= b
 end
 
 H.gt = function(a, b)
@@ -151,6 +143,22 @@ end
 
 H.lt = function(a, b)
 	return a < b
+end
+
+H.neq = function(a, b)
+	return not H.eq(a, b)
+end
+
+H.ngt = function(a, b)
+	return not H.gt(a, b)
+end
+
+H.nlt = function(a, b)
+	return not H.lt(a, b)
+end
+
+H.any = function(a, b)
+	return true
 end
 
 H.indent = function(lnum)
