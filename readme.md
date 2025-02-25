@@ -82,6 +82,10 @@ para3 treats lines with the same indent as the current line as one paragraph
 
 you can adjust the behavior by changing the config
 
+for example:
+
+---
+
 ![](assets/para3-00.png)
 
 config:
@@ -132,7 +136,7 @@ config:
 }
 ```
 
-# para3a
+## para3a
 
 ![](assets/para3a.png)
 
@@ -226,6 +230,58 @@ require("paramo").setup({
 		},
 	},
 })
+```
+
+# text objects
+
+paramo.nvim does not have any text objects built in
+
+however, you can use the api together with other text objects plugins to get the desired text objects
+
+for example, with [mini.ai](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-ai.md)
+
+```
+i = function(ai_type)
+	local para = require("paramo/para3")
+
+	if ai_type == "i" then
+		para.setup({
+			include_more_indent = false,
+			include_empty_lines = false,
+		})
+	else
+		para.setup({
+			include_more_indent = false,
+			include_empty_lines = true,
+		})
+	end
+
+	local lnum_cursor = vim.fn.line(".")
+	local lnum_1
+	if para.head_p(lnum_cursor) then
+		lnum_1 = lnum_cursor
+	else
+		lnum_1 = para.backward_pos(lnum_cursor, para.head_p)
+	end
+	local lnum_2
+	if para.tail_p(lnum_cursor) then
+		lnum_2 = lnum_cursor
+	else
+		lnum_2 = para.forward_pos(lnum_cursor, para.tail_p)
+	end
+
+	return {
+		from = {
+			line = lnum_1,
+			col = 1,
+		},
+		to = {
+			line = lnum_2,
+			col = 1,
+		},
+		vis_mode = "V",
+	}
+end,
 ```
 
 # related plugins
