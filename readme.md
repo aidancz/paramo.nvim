@@ -1,10 +1,14 @@
-paramo.nvim provides 5 kinds of paragraph motions:
+paramo.nvim provides several types of paragraph motions:
 
 - para0
 - para1
 - para2
 - para3
-- para4
+- para3a
+
+💖 paramo.nvim loves **wrapped lines**
+
+😊 paramo.nvim loves **virtualedit=all** even more
 
 # demo
 
@@ -12,97 +16,144 @@ a paragraph is a sequence of lines
 
 i refer to the first line as the "head" and the last line as the "tail"
 
-this plugin makes it easy to navigate to both the head and tail
+this plugin makes it easy to navigate to "head" and "tail"
 
-WORKS VERY WELL VIRTUALEDIT WRAP
-
-in the image below, i use continuous blue or yellow to mark the paragraphs that the specific "paramo" considers
+in the image below, i use continuous blue or yellow to mark the paragraphs that the specific paramo considers
 
 ## para0
 
 ![](assets/para0.png)
 
-![](assets/paraa.png)
-![](assets/parab.png)
-
 para0 treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
 
 ## para1
 
-![](assets/para1a.png)
+![](assets/para1-1.png)
 
-para1a treats a sequence of non-empty lines as a paragraph
+para1 treats a sequence of **non-empty** lines as a paragraph with this config:
 
-![](assets/para1b.png)
+```
+{
+	empty = false
+}
+```
 
-para1b treats a sequence of empty lines as a paragraph
+![](assets/para1-2.png)
+
+para1 treats a sequence of **empty** lines as a paragraph with this config:
+
+```
+{
+	empty = true
+}
+```
 
 ## para2
 
-![](assets/para2a-1.png)
+![](assets/para2-1.png)
 
-![](assets/para2a-2.png)
+![](assets/para2-2.png)
 
-para2 treats a sequence of lines containing characters in the cursor's column as a paragraph
+![](assets/para2-3.png)
+
+para2 treats a sequence of lines **containing** characters in the **cursor's column** as a paragraph with this config:
+
+```
+{
+	empty = false
+}
+```
 
 so the definition of para2 changes depending on the position of the cursor (note the position of the cursor in the image)
 
 to understand the concept of para2, you may want to `:set cursorcolumn` and `:set virtualedit=all`
 
-the image shows para2a
+para2 treats a sequence of lines **not containing** characters in the **cursor's column** as a paragraph with this config:
 
-para2b is the opposite of para2a
+```
+{
+	empty = true
+}
+```
 
 ## para3
 
-![](assets/para3.png)
+para3 treats lines with the same indent as the current line as one paragraph
 
-para3 treats lines with the same indent as a paragraph
+you can adjust the behavior by changing the config
 
-para3a: indent = any
-para3b: indent = current
-para3c: indent != current
-para3d: indent > current
-para3e: indent < current
+![](assets/para3-00.png)
 
-## para4
-
-![](assets/para4-1.png)
-
-![](assets/para4-2.png)
-
-para4 treats lines with the same or more indent as a paragraph
-
-para4a: indent = any
-para4b: indent = current
-para4c: indent != current
-para4d: indent > current
-para4e: indent < current
-
-# summary
-
-all para types are listed below:
+config:
 
 ```
-- para0
+{
+	include_more_indent = false,
+	include_empty_lines = false,
+}
+```
 
-- para1a
-- para1b
+---
 
-- para2a
-- para2b
+![](assets/para3-01.png)
 
-- para3a
-- para3b
-- para3c
-- para3d
-- para3e
+config:
 
-- para4a
-- para4b
-- para4c
-- para4d
-- para4e
+```
+{
+	include_more_indent = false,
+	include_empty_lines = true,
+}
+```
+
+---
+
+![](assets/para3-10.png)
+
+config:
+
+```
+{
+	include_more_indent = true,
+	include_empty_lines = false,
+}
+```
+
+---
+
+![](assets/para3-11.png)
+
+config:
+
+```
+{
+	include_more_indent = true,
+	include_empty_lines = true,
+}
+```
+
+# para3a
+
+![](assets/para3a.png)
+
+para3a allows navigation across different indent levels and can be configured by:
+
+```
+{
+	indent = "eq",
+}
+```
+
+possible values:
+
+```
+	indent = "eq", -- equal indent to current
+	indent = "gt", -- greater indent than current
+	indent = "lt", -- less indent than current
+	indent = "neq", -- not eq
+	indent = "ngt", -- not gt
+	indent = "nlt", -- not lt
+	indent = "any", -- any indent
 ```
 
 # setup
@@ -113,6 +164,9 @@ all para types are listed below:
 require("paramo").setup({
 	{
 		type = "para1",
+		type_config = {
+			empty = false,
+		},
 		backward = {
 			head = "<a-b>",
 			tail = "<a-g>",
@@ -122,15 +176,6 @@ require("paramo").setup({
 			head = "<a-w>",
 			tail = "<a-e>",
 			head_or_tail = "<a-n>",
-		},
-	},
-	{
-		type = "para3",
-		backward = {
-			head_or_tail = "<a-k>",
-		},
-		forward = {
-			head_or_tail = "<a-j>",
 		},
 	},
 })
@@ -143,7 +188,10 @@ you can simulate the builtin `{` and `}` motions with:
 ```
 require("paramo").setup({
 	{
-		type = "para2",
+		type = "para1",
+		type_config = {
+			empty = true,
+		},
 		backward = {
 			tail = "{",
 		},
@@ -156,42 +204,30 @@ require("paramo").setup({
 
 ## setup example 3:
 
-this is my current setup:
-
 ```
 require("paramo").setup({
 	{
-		type = "para1",
+		type = "para0",
 		backward = {
-			head = "<a-b>",
-			tail = "<a-g>",
+			head_or_tail = "<a-k>",
 		},
 		forward = {
-			head = "<a-w>",
-			tail = "<a-e>",
-		},
-	},
-	{
-		type = "para2",
-		backward = {
-			head = "(",
-			tail = "{",
-		},
-		forward = {
-			head = "}",
-			tail = ")",
+			head_or_tail = "<a-j>",
 		},
 	},
 	{
 		type = "para3",
-		backward = {
-			head_or_tail = "<pageup>",
+		type_config = {
+			include_more_indent = false,
+			include_empty_lines = false,
 		},
 		forward = {
-			head_or_tail = "<pagedown>",
+			head = "<down>"
 		},
 	},
 })
 ```
 
 # related plugins
+
+https://github.com/jessekelighine/vindent.vim

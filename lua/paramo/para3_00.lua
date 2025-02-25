@@ -1,46 +1,22 @@
 local M = {}
 local H = require("paramo/parah")
-local HR = {} -- help function redefine
 
 -- # config & setup
-
-M.config = {
-	include_empty = false,
-}
-
-M.setup = function(config)
-	M.config = vim.tbl_deep_extend("force", M.config, config or {})
-
-	if not M.config.include_empty then
-		HR.indent = H.indent
-	else
-		HR.indent = function(lnum)
-			local indent = H.indent(lnum)
-			if indent == -1 then
-				local lnum_cursor = vim.fn.line(".")
-				if H.indent(lnum_cursor) == -1 then
-					indent = H.virtcol_cursor() - 1
-				else
-					indent = H.indent(lnum_cursor)
-				end
-			end
-			return indent
-		end
-	end
-end
 
 -- # head & tail
 
 M.head_p = function(lnum)
-	local indent_cursor = HR.indent(vim.fn.line("."))
+	local indent_cursor = H.indent(vim.fn.line("."))
 
 	if
-		HR.indent(lnum) >= indent_cursor
-		and
 		(
 			H.first_p(lnum)
 			or
-			HR.indent(lnum - 1) < indent_cursor
+			H.neq(H.indent(lnum - 1), H.indent(lnum))
+		)
+		and
+		(
+			H.eq(H.indent(lnum), indent_cursor)
 		)
 	then
 		return true
@@ -50,15 +26,17 @@ M.head_p = function(lnum)
 end
 
 M.tail_p = function(lnum)
-	local indent_cursor = HR.indent(vim.fn.line("."))
+	local indent_cursor = H.indent(vim.fn.line("."))
 
 	if
-		HR.indent(lnum) >= indent_cursor
-		and
 		(
 			H.last_p(lnum)
 			or
-			HR.indent(lnum + 1) < indent_cursor
+			H.neq(H.indent(lnum + 1), H.indent(lnum))
+		)
+		and
+		(
+			H.eq(H.indent(lnum), indent_cursor)
 		)
 	then
 		return true
@@ -100,7 +78,7 @@ M.backward = function(terminate_p)
 
 	local lnum1 = M.backward_pos(lnum0, terminate_p)
 	if lnum1 then
-		H.set_cursor(lnum1, math.max(1, HR.indent(lnum1) + 1))
+		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
 	end
 end
 
@@ -109,7 +87,7 @@ M.forward = function(terminate_p)
 
 	local lnum1 = M.forward_pos(lnum0, terminate_p)
 	if lnum1 then
-		H.set_cursor(lnum1, math.max(1, HR.indent(lnum1) + 1))
+		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
 	end
 end
 

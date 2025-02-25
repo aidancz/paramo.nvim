@@ -1,15 +1,7 @@
 local M = {}
 local H = require("paramo/parah")
-local HR = {} -- help function redefine
 
 -- # config & setup
-
-M.config = {
-}
-
-M.setup = function(config)
-	M.config = vim.tbl_deep_extend("force", M.config, config or {})
-end
 
 -- # head & tail
 
