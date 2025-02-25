@@ -95,6 +95,7 @@ M.backward = function(terminate_p)
 	local lnum1, virtcol1 = M.backward_pos(lnum0, virtcol0, terminate_p)
 	if lnum1 then
 		H.set_cursor(lnum1, virtcol1)
+		vim.cmd("normal! zv")
 	end
 end
 
@@ -105,6 +106,7 @@ M.forward = function(terminate_p)
 	local lnum1, virtcol1 = M.forward_pos(lnum0, virtcol0, terminate_p)
 	if lnum1 then
 		H.set_cursor(lnum1, virtcol1)
+		vim.cmd("normal! zv")
 	end
 end
 

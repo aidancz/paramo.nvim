@@ -87,6 +87,7 @@ M.backward = function(terminate_p)
 	if lnum1 then
 		require("paramo/para0").ensure_head()
 		vim.cmd(tostring(lnum1))
+		vim.cmd("normal! zv")
 	end
 end
 
@@ -97,6 +98,7 @@ M.forward = function(terminate_p)
 	if lnum1 then
 		require("paramo/para0").ensure_head()
 		vim.cmd(tostring(lnum1))
+		vim.cmd("normal! zv")
 	end
 end
 

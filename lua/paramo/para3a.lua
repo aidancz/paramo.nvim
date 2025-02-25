@@ -101,6 +101,7 @@ M.backward = function(terminate_p)
 	local lnum1 = M.backward_pos(lnum0, terminate_p)
 	if lnum1 then
 		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
+		vim.cmd("normal! zv")
 	end
 end
 
@@ -110,6 +111,7 @@ M.forward = function(terminate_p)
 	local lnum1 = M.forward_pos(lnum0, terminate_p)
 	if lnum1 then
 		H.set_cursor(lnum1, math.max(1, H.indent(lnum1) + 1))
+		vim.cmd("normal! zv")
 	end
 end
 
