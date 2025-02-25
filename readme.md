@@ -22,6 +22,9 @@ in the image below, i use continuous blue or yellow to mark the paragraphs that 
 
 ![](assets/para0.png)
 
+![](assets/paraa.png)
+![](assets/parab.png)
+
 para0 treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
 
 ## para1
