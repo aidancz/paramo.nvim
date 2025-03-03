@@ -105,6 +105,12 @@ end
 
 
 
+H.col_first_nonblank = function(lnum)
+	local line = vim.fn.getline(lnum)
+	local col1, col2 = string.find(line, "%S")
+	return col1
+end
+
 H.virtcol_first_nonblank = function(lnum)
 	local line = vim.fn.getline(lnum)
 	local col1, col2 = string.find(line, "%S")
@@ -177,6 +183,27 @@ H.indent = function(lnum)
 	end
 
 	return indent
+end
+
+
+
+H.posgetchar = function(lnum, col)
+	return
+	vim.fn.strpart(
+		vim.fn.getline(lnum),
+		col - 1,
+		1,
+		true
+	)
+end
+
+H.first_nonblank_char = function(lnum)
+	local col_first_nonblank = H.col_first_nonblank(lnum)
+	if col_first_nonblank then
+		return H.posgetchar(lnum, col_first_nonblank)
+	else
+		return nil
+	end
 end
 
 return H

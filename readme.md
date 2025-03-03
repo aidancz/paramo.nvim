@@ -5,6 +5,7 @@ paramo.nvim provides several types of paragraph motions:
 - para2
 - para3
 - para3a
+- para4
 
 💖 paramo.nvim loves **wrapped lines**
 
@@ -160,6 +161,12 @@ possible values:
 	indent = "any", -- any indent
 ```
 
+## para4
+
+para4 treats lines with the same first non-blank character as one paragraph
+
+i use para4 to create comment textobject
+
 # setup
 
 ## setup example 1:
@@ -232,51 +239,43 @@ require("paramo").setup({
 })
 ```
 
-# text objects
+# textobjects
 
-paramo.nvim does not have any text objects built in
+paramo.nvim does not have any textobjects built in
 
-however, you can use the api together with other text objects plugins to get the desired text objects
+however, you can use the api together with other textobjects plugins to get the desired textobjects
 
-for example, with [mini.ai](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-ai.md)
+for example, [mini.ai](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-ai.md):
 
 ```
 i = function(ai_type)
-	local para = require("paramo/para3")
-
+	local head_and_tail
 	if ai_type == "i" then
-		para.setup({
-			include_more_indent = false,
-			include_empty_lines = false,
-		})
+		head_and_tail =
+			require("paramo").get_head_and_tail(
+				"para3",
+				{
+					include_more_indent = false,
+					include_empty_lines = false,
+				}
+			)
 	else
-		para.setup({
-			include_more_indent = false,
-			include_empty_lines = true,
-		})
+		head_and_tail =
+			require("paramo").get_head_and_tail(
+				"para3",
+				{
+					include_more_indent = false,
+					include_empty_lines = true,
+				}
+			)
 	end
-
-	local lnum_cursor = vim.fn.line(".")
-	local lnum_1
-	if para.head_p(lnum_cursor) then
-		lnum_1 = lnum_cursor
-	else
-		lnum_1 = para.backward_pos(lnum_cursor, para.head_p)
-	end
-	local lnum_2
-	if para.tail_p(lnum_cursor) then
-		lnum_2 = lnum_cursor
-	else
-		lnum_2 = para.forward_pos(lnum_cursor, para.tail_p)
-	end
-
 	return {
 		from = {
-			line = lnum_1,
+			line = head_and_tail.head,
 			col = 1,
 		},
 		to = {
-			line = lnum_2,
+			line = head_and_tail.tail,
 			col = 1,
 		},
 		vis_mode = "V",

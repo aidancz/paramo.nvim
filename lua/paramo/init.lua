@@ -86,4 +86,68 @@ M.setup = function(config)
 	end
 end
 
+M.get_head_and_tail = function(para_type, para_type_config)
+	local para = require("paramo/" .. para_type)
+	if para.setup then para.setup(para_type_config) end
+
+	if debug.getinfo(para.head_p).nparams == 1 then
+		local lnum_cursor = vim.fn.line(".")
+
+		local lnum_bh = para.backward_pos(lnum_cursor, para.head_p)
+		local lnum_bt = para.backward_pos(lnum_cursor, para.tail_p)
+		local lnum_fh = para.forward_pos(lnum_cursor, para.head_p)
+		local lnum_ft = para.forward_pos(lnum_cursor, para.tail_p)
+
+		local lnum_1
+		if para.head_p(lnum_cursor) then
+			lnum_1 = lnum_cursor
+		else
+			lnum_1 = lnum_bh >= lnum_bt and lnum_bh or nil
+		end
+
+		local lnum_2
+		if para.tail_p(lnum_cursor) then
+			lnum_2 = lnum_cursor
+		else
+			lnum_2 = lnum_ft <= lnum_fh and lnum_ft or nil
+		end
+
+		return
+		{
+			head = lnum_1,
+			tail = lnum_2,
+		}
+	end
+
+	if debug.getinfo(para.head_p).nparams == 2 then
+		local lnum_cursor = vim.fn.line(".")
+		local virtcol_cursor = require("paramo/parah").virtcol_cursor()
+
+		local lnum_bh = para.backward_pos(lnum_cursor, virtcol_cursor, para.head_p)
+		local lnum_bt = para.backward_pos(lnum_cursor, virtcol_cursor, para.tail_p)
+		local lnum_fh = para.forward_pos(lnum_cursor, virtcol_cursor, para.head_p)
+		local lnum_ft = para.forward_pos(lnum_cursor, virtcol_cursor, para.tail_p)
+
+		local lnum_1
+		if para.head_p(lnum_cursor, virtcol_cursor) then
+			lnum_1 = lnum_cursor
+		else
+			lnum_1 = lnum_bh >= lnum_bt and lnum_bh or nil
+		end
+
+		local lnum_2
+		if para.tail_p(lnum_cursor, virtcol_cursor) then
+			lnum_2 = lnum_cursor
+		else
+			lnum_2 = lnum_ft <= lnum_fh and lnum_ft or nil
+		end
+
+		return
+		{
+			head = lnum_1,
+			tail = lnum_2,
+		}
+	end
+end
+
 return M
