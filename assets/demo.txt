@@ -79,6 +79,7 @@ vim.keymap.set("n", "<a-w>", highlight_line4)
 vim.keymap.set("n", "r", clear)
 EOF
 
+maim -g 1280x640+0+0 $(date +'%Y%m%d-%H%M%S-%N').png
 
 
 
@@ -162,3 +163,26 @@ local SumTo = function(number)
 end
 
 # copy from https://github.com/jessekelighine/vindent.nvim
+
+
+
+
+
+
+
+
+
+-- defines a factorial function
+function fact (n)
+  -- if n == 0 then
+    -- return 1
+  -- else
+    -- return n * fact(n-1)
+  -- end
+end
+
+
+print("enter a number:")
+a = io.read("*number")        -- read a number
+print(fact(a))
+print(fact(a))

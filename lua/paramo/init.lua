@@ -102,14 +102,22 @@ M.get_head_and_tail = function(para_type, para_type_config)
 		if para.head_p(lnum_cursor) then
 			lnum_1 = lnum_cursor
 		else
-			lnum_1 = lnum_bh >= lnum_bt and lnum_bh or nil
+			if lnum_bh and ((not lnum_bt) or (lnum_bh >= lnum_bt)) then
+				lnum_1 = lnum_bh
+			else
+				lnum_1 = nil
+			end
 		end
 
 		local lnum_2
 		if para.tail_p(lnum_cursor) then
 			lnum_2 = lnum_cursor
 		else
-			lnum_2 = lnum_ft <= lnum_fh and lnum_ft or nil
+			if lnum_ft and ((not lnum_fh) or (lnum_ft <= lnum_fh)) then
+				lnum_2 = lnum_ft
+			else
+				lnum_2 = nil
+			end
 		end
 
 		return
@@ -132,14 +140,22 @@ M.get_head_and_tail = function(para_type, para_type_config)
 		if para.head_p(lnum_cursor, virtcol_cursor) then
 			lnum_1 = lnum_cursor
 		else
-			lnum_1 = lnum_bh >= lnum_bt and lnum_bh or nil
+			if lnum_bh and ((not lnum_bt) or (lnum_bh >= lnum_bt)) then
+				lnum_1 = lnum_bh
+			else
+				lnum_1 = nil
+			end
 		end
 
 		local lnum_2
 		if para.tail_p(lnum_cursor, virtcol_cursor) then
 			lnum_2 = lnum_cursor
 		else
-			lnum_2 = lnum_ft <= lnum_fh and lnum_ft or nil
+			if lnum_ft and ((not lnum_fh) or (lnum_ft <= lnum_fh)) then
+				lnum_2 = lnum_ft
+			else
+				lnum_2 = nil
+			end
 		end
 
 		return

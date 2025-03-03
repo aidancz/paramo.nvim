@@ -163,6 +163,8 @@ possible values:
 
 ## para4
 
+![](assets/para4.png)
+
 para4 treats lines with the same first non-blank character as one paragraph
 
 i use para4 to create comment textobject
