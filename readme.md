@@ -1,10 +1,46 @@
-paramo.nvim provides several types of paragraph motions
+paramo.nvim enhances vertical movement in nvim
 
-💖 paramo.nvim loves **wrapped lines**
+😊 paramo.nvim handles wrapped lines gracefully and plays nicely with `virtualedit`
 
-😊 paramo.nvim loves **virtualedit=all** even more
+# install
+
+[paramo.nvim](https://github.com/aidancz/paramo.nvim) depends on [virtcol.nvim](https://github.com/aidancz/virtcol.nvim), make sure both are installed
+
+for example, with [mini.deps](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-deps.md):
+
+```lua
+require("mini.deps").add({
+	source = "aidancz/paramo.nvim",
+	depends = {
+		{
+			source = "aidancz/virtcol.nvim",
+		},
+	},
+})
+```
 
 # demo
+
+## virtcol.nvim
+
+the vertical movement ability of `paramo.nvim` comes from `virtcol.nvim`,
+
+for example, you can simulate the builtin `gj` with:
+
+```lua
+vim.keymap.set(
+	"n",
+	"j",
+	function()
+		local m = require("virtcol")
+		m.set_cursor(m.next_pos(m.get_cursor()))
+	end
+)
+```
+
+> [!NOTE]
+>
+> throughout this readme, it's recommended to set `vim.o.virtualedit = "all"` to clearly observe how the motions behave
 
 a paragraph is a sequence of lines
 
