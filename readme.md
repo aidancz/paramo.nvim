@@ -1,11 +1,4 @@
-paramo.nvim provides several types of paragraph motions:
-
-- para0
-- para1
-- para2
-- para3
-- para3a
-- para4
+paramo.nvim provides several types of paragraph motions
 
 💖 paramo.nvim loves **wrapped lines**
 
@@ -21,11 +14,11 @@ this plugin makes it easy to navigate to "head" and "tail"
 
 in the image below, i use continuous blue or yellow to mark the paragraphs that the specific paramo considers
 
-## para0
+## para_wrap_line
 
-![](assets/para0.png)
+![](assets/para_wrap_line.png)
 
-para0 treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
+para_wrap_line treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
 
 ## para1
 
