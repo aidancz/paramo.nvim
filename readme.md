@@ -23,13 +23,9 @@ require("mini.deps").add({
 
 add these codes to your config and see if you can figure out what these keymaps mean 😊
 
-> [!NOTE]
->
-> throughout this readme, it's recommended to set `vim.o.virtualedit = "all"` to clearly observe how the motions behave
-
 <details>
 
-<summary>click me</summary>
+<summary>⭐click me⭐</summary>
 
 ```lua
 local map = function(key, direction, is, hook)
@@ -121,26 +117,11 @@ map(
 
 </details>
 
-put this to your config and see what those keymaps does
+> [!NOTE]
+>
+> throughout this readme, it's recommended to set `vim.o.virtualedit = "all"` to clearly observe how the motions behave
 
-## virtcol.nvim
-
-the vertical movement ability of `paramo.nvim` comes from `virtcol.nvim`,
-
-for example, you can simulate the builtin `gj` with:
-
-```lua
-vim.keymap.set(
-	"n",
-	"<down>",
-	function()
-		local m = require("virtcol")
-		m.set_cursor(m.next_pos(m.get_cursor()))
-	end
-)
-```
-
-## glossary
+# glossary
 
 `pos` refers to a table with `lnum` and `virtcol` fields, for example:
 
@@ -163,237 +144,65 @@ function(pos)
 end
 ```
 
+# require("paramo").expr
 
-o
+this is a wrapper function for easily creating expression mappings
 
+for example, you can create a motion that moves cursor to the next pos that lnum is even:
 
-a paragraph is a sequence of lines
-
-i refer to the first line as the "head" and the last line as the "tail"
-
-this plugin makes it easy to navigate to "head" and "tail"
-
-in the image below, i use continuous blue or yellow to mark the paragraphs that the specific paramo considers
-
-## para_wrap_line
-
-![](assets/para_wrap_line.png)
-
-para_wrap_line treats a logical line as a paragraph, where a logical line may span multiple screen lines (when `:set wrap`)
-
-## para1
-
-![](assets/para1-1.png)
-
-para1 treats a sequence of **non-empty** lines as a paragraph with this config:
-
-```
-{
-	empty = false
-}
+```lua
+vim.keymap.set(
+	{"n", "x", "o"},
+	"<down>",
+	function()
+		return
+		require("paramo").expr({
+			direction = "next",
+			is = function(pos)
+				if pos.lnum % 2 == 0 then
+					return false
+				else
+					return true
+				end
+			end
+		})
+	end,
+	{expr = true}
+)
 ```
 
-![](assets/para1-2.png)
+# `is` function
 
-para1 treats a sequence of **empty** lines as a paragraph with this config:
+`paramo.nvim` has many `is` functions builtin
 
-```
-{
-	empty = true
-}
-```
-
-## para2
-
-![](assets/para2-1.png)
-
-![](assets/para2-2.png)
-
-![](assets/para2-3.png)
-
-para2 treats a sequence of lines **containing** characters in the **cursor's column** as a paragraph with this config:
+for example, `lua/para_nonempty.lua` provide 3 `is` functions:
 
 ```
-{
-	empty = false
-}
+require("para_nonempty").is_head
+require("para_nonempty").is_tail
+require("para_nonempty").is_head_or_tail
 ```
 
-so the definition of para2 changes depending on the position of the cursor (note the position of the cursor in the image)
+more `is` functions can be found at `lua/para_xxxx.lua` file
 
-to understand the concept of para2, you may want to `:set cursorcolumn` and `:set virtualedit=all`
+# virtcol.nvim
 
-para2 treats a sequence of lines **not containing** characters in the **cursor's column** as a paragraph with this config:
+the vertical movement ability of `paramo.nvim` comes from `virtcol.nvim`,
 
-```
-{
-	empty = true
-}
-```
+for example, you can simulate the builtin `gj` with:
 
-## para3
-
-para3 treats lines with the same indent as the current line as one paragraph
-
-you can adjust the behavior by changing the config
-
-for example:
-
----
-
-![](assets/para3-00.png)
-
-config:
-
-```
-{
-	include_more_indent = false,
-	include_empty_lines = false,
-}
+```lua
+vim.keymap.set(
+	"n",
+	"<down>",
+	function()
+		local m = require("virtcol")
+		m.set_cursor(m.next_pos(m.get_cursor()))
+	end
+)
 ```
 
----
-
-![](assets/para3-01.png)
-
-config:
-
-```
-{
-	include_more_indent = false,
-	include_empty_lines = true,
-}
-```
-
----
-
-![](assets/para3-10.png)
-
-config:
-
-```
-{
-	include_more_indent = true,
-	include_empty_lines = false,
-}
-```
-
----
-
-![](assets/para3-11.png)
-
-config:
-
-```
-{
-	include_more_indent = true,
-	include_empty_lines = true,
-}
-```
-
-## para3a
-
-![](assets/para3a.png)
-
-para3a allows navigation across different indent levels and can be configured by:
-
-```
-{
-	indent = "eq",
-}
-```
-
-possible values:
-
-```
-	indent = "eq", -- equal indent to current
-	indent = "gt", -- greater indent than current
-	indent = "lt", -- less indent than current
-	indent = "neq", -- not eq
-	indent = "ngt", -- not gt
-	indent = "nlt", -- not lt
-	indent = "any", -- any indent
-```
-
-## para4
-
-![](assets/para4.png)
-
-para4 treats lines with the same first non-blank character as one paragraph
-
-i use para4 to create comment textobject
-
-# setup
-
-## setup example 1:
-
-```
-require("paramo").setup({
-	{
-		type = "para1",
-		type_config = {
-			empty = false,
-		},
-		backward = {
-			head = "<a-b>",
-			tail = "<a-g>",
-			head_or_tail = "<a-p>",
-		},
-		forward = {
-			head = "<a-w>",
-			tail = "<a-e>",
-			head_or_tail = "<a-n>",
-		},
-	},
-})
-```
-
-## setup example 2:
-
-you can simulate the builtin `{` and `}` motions with:
-
-```
-require("paramo").setup({
-	{
-		type = "para1",
-		type_config = {
-			empty = true,
-		},
-		backward = {
-			tail = "{",
-		},
-		forward = {
-			head = "}",
-		},
-	},
-})
-```
-
-## setup example 3:
-
-```
-require("paramo").setup({
-	{
-		type = "para0",
-		backward = {
-			head_or_tail = "<a-k>",
-		},
-		forward = {
-			head_or_tail = "<a-j>",
-		},
-	},
-	{
-		type = "para3",
-		type_config = {
-			include_more_indent = false,
-			include_empty_lines = false,
-		},
-		forward = {
-			head = "<down>"
-		},
-	},
-})
-```
+for details, check its source code
 
 # textobjects
 
@@ -401,43 +210,93 @@ paramo.nvim does not have any textobjects built in
 
 however, you can use the api together with other textobjects plugins to get the desired textobjects
 
-for example, [mini.ai](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-ai.md):
+for example, indent textobjects (`ii`, `ai`, `io`, `ao`) with [mini.ai](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-ai.md):
 
-```
-i = function(ai_type)
-	local head_and_tail
-	if ai_type == "i" then
-		head_and_tail =
-			require("paramo").get_head_and_tail(
-				"para3",
-				{
-					include_more_indent = false,
-					include_empty_lines = false,
-				}
-			)
-	else
-		head_and_tail =
-			require("paramo").get_head_and_tail(
-				"para3",
-				{
-					include_more_indent = false,
-					include_empty_lines = true,
-				}
-			)
-	end
-	return {
-		from = {
-			line = head_and_tail.head,
-			col = 1,
-		},
-		to = {
-			line = head_and_tail.tail,
-			col = 1,
-		},
-		vis_mode = "V",
-	}
-end,
-```
+<details>
+
+<summary>⭐click me⭐</summary>
+
+```lua
+require("mini.ai").setup({
+	custom_textobjects = {
+		i = function(ai_type)
+			local is_head
+			local is_tail
+			if ai_type == "i" then
+				is_head = require("para_cursor_indent").is_head
+				is_tail = require("para_cursor_indent").is_tail
+			else
+				is_head = require("para_cursor_indent_include_empty_line").is_head
+				is_tail = require("para_cursor_indent_include_empty_line").is_tail
+			end
+
+			local pos_head
+			local pos_tail
+			local pos_cursor = require("virtcol").get_cursor()
+			if is_head(pos_cursor) then
+				pos_head = pos_cursor
+			else
+				pos_head = require("paramo").prev_pos(pos_cursor, is_head)
+			end
+			if is_tail(pos_cursor) then
+				pos_tail = pos_cursor
+			else
+				pos_tail = require("paramo").next_pos(pos_cursor, is_tail)
+			end
+
+			return {
+				from = {
+					line = pos_head.lnum,
+					col = 1,
+				},
+				to = {
+					line = pos_tail.lnum,
+					col = 1,
+				},
+				vis_mode = "V",
+			}
+		end,
+
+		o = function(ai_type)
+			local is_head
+			local is_tail
+			if ai_type == "i" then
+				is_head = require("para_cursor_ondent").is_head
+				is_tail = require("para_cursor_ondent").is_tail
+			else
+				is_head = require("para_cursor_ondent_include_empty_line").is_head
+				is_tail = require("para_cursor_ondent_include_empty_line").is_tail
+			end
+
+			local pos_head
+			local pos_tail
+			local pos_cursor = require("virtcol").get_cursor()
+			if is_head(pos_cursor) then
+				pos_head = pos_cursor
+			else
+				pos_head = require("paramo").prev_pos(pos_cursor, is_head)
+			end
+			if is_tail(pos_cursor) then
+				pos_tail = pos_cursor
+			else
+				pos_tail = require("paramo").next_pos(pos_cursor, is_tail)
+			end
+
+			return {
+				from = {
+					line = pos_head.lnum,
+					col = 1,
+				},
+				to = {
+					line = pos_tail.lnum,
+					col = 1,
+				},
+				vis_mode = "V",
+			}
+		end,
+})
+
+</summary>
 
 # related plugins
 
