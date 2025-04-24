@@ -3,24 +3,24 @@ paramo.nvim enhances vertical movement in nvim
 for example:
 
 ```
-xxx█xxxx	-- your cursor here
+xxx█xxxx        -- your cursor here
 xxxxxxxx
-xxx█xxxx	-- you want your cursor positioned here, but no builtin motion does this
+xxx█xxxx        -- you want your cursor positioned here, but no builtin motion does this
 
 xxxxxxxx
 xxxxxxxx
 ```
 
 ```
-xxx█xxxx	-- your cursor here
-	xxxxxxxx
-		xxxxxxxx
-	xxxxxxxx
-	xxxxxxxx
+xxx█xxxx        -- your cursor here
+        xxxxxxxx
+                xxxxxxxx
+        xxxxxxxx
+        xxxxxxxx
 
-	xxxxxxxx
-	xxxxxxxx
-xxx█xxxx	-- you want here
+        xxxxxxxx
+        xxxxxxxx
+xxx█xxxx        -- you want here
 xxxxxxxx
 xxxxxxxx
 ```
