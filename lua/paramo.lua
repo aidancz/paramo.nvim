@@ -24,6 +24,9 @@ M.next_pos = function(pos, is)
 	return M.next_pos(pos_candidate, is)
 end
 
+---@param count number
+---@param direction "prev"|"next"
+---@param is function
 M.set_cursor = function(count, direction, is)
 	local pos = H.get_cursor()
 	for _ = 1, count do
@@ -38,17 +41,22 @@ M.set_cursor = function(count, direction, is)
 	vim.cmd("normal! zv")
 end
 
+-- # the following is for dot-repeat
+
+---@param opts {
+---	count: number,
+---	direction: "prev"|"next",
+---	is: function,
+---	hook?: function,
+---}
 M.set_cursor_opts = function(opts)
 	M.set_cursor(opts.count, opts.direction, opts.is)
+	if opts.hook ~= nil then
+		opts.hook()
+	end
 end
 
--- the following is for dot-repeat
-
-M.cache = {
-	count = nil,
-	direction = nil,
-	is = nil,
-}
+M.cache_opts = nil
 
 M.start_visual_mode = function()
 	local mode = vim.api.nvim_get_mode().mode
@@ -69,30 +77,33 @@ M.start_visual_mode = function()
 	vim.cmd("normal! " .. vis_mode)
 end
 
-M.apply_cache = function()
+M.apply_cache_opts = function()
 	M.start_visual_mode()
 	if vim.v.count ~= 0 then
-		M.cache.count = vim.v.count
+		M.cache_opts.count = vim.v.count
 	end
-	M.set_cursor_opts(M.cache)
+	M.set_cursor_opts(M.cache_opts)
 end
 
 ---@param opts {
+---	count?: number,
 ---	direction: "prev"|"next",
 ---	is: function,
+---	hook?: function,
 ---}
 M.expr = function(opts)
-	opts.count = vim.v.count1
+	opts.count = opts.count or vim.v.count1
 
 	local mode = vim.api.nvim_get_mode().mode
-	if string.sub(mode, 1, 2) ~= "no" then
+	local is_operator_pending_mode = string.sub(mode, 1, 2) == "no"
+	if is_operator_pending_mode then
+		M.cache_opts = opts
+		return
+		[[<cmd>lua require("paramo").apply_cache_opts()<cr>]]
+	else
 		vim.schedule(function()
 			M.set_cursor_opts(opts)
 		end)
-	else
-		M.cache = opts
-		return
-		[[<cmd>lua require("paramo").apply_cache()<cr>]]
 	end
 end
 
