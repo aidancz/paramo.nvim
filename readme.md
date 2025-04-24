@@ -11,6 +11,20 @@ xxxxxxxx
 xxxxxxxx
 ```
 
+```
+xxx█xxxx	-- your cursor here
+	xxxxxxxx
+		xxxxxxxx
+	xxxxxxxx
+	xxxxxxxx
+
+	xxxxxxxx
+	xxxxxxxx
+xxx█xxxx	-- you want here
+xxxxxxxx
+xxxxxxxx
+```
+
 paramo.nvim handles `wrapped lines` gracefully and plays nicely with `virtualedit`
 
 # install
