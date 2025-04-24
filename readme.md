@@ -295,6 +295,7 @@ require("mini.ai").setup({
 			}
 		end,
 })
+```
 
 </summary>
 
