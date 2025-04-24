@@ -308,7 +308,7 @@ require("mini.ai").setup({
 })
 ```
 
-</summary>
+</details>
 
 # related plugins
 
