@@ -1,5 +1,16 @@
 paramo.nvim enhances vertical movement in nvim
 
+for example:
+
+```
+xxx█xxxx	-- your cursor here
+xxxxxxxx
+xxx█xxxx	-- you want your cursor positioned here, but no builtin motion does this
+
+xxxxxxxx
+xxxxxxxx
+```
+
 paramo.nvim handles `wrapped lines` gracefully and plays nicely with `virtualedit`
 
 # install
