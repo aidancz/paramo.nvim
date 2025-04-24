@@ -1,6 +1,6 @@
 paramo.nvim enhances vertical movement in nvim
 
-😊 paramo.nvim handles wrapped lines gracefully and plays nicely with `virtualedit`
+paramo.nvim handles `wrapped lines` gracefully and plays nicely with `virtualedit`
 
 # install
 
@@ -19,7 +19,109 @@ require("mini.deps").add({
 })
 ```
 
-# demo
+# quick start
+
+add these codes to your config and see if you can figure out what these keymaps mean 😊
+
+> [!NOTE]
+>
+> throughout this readme, it's recommended to set `vim.o.virtualedit = "all"` to clearly observe how the motions behave
+
+<details>
+
+<summary>click me</summary>
+
+```lua
+local map = function(key, direction, is, hook)
+	vim.keymap.set(
+		{"n", "x", "o"},
+		key,
+		function()
+			return
+			require("paramo").expr({
+				direction = direction,
+				is = is,
+				hook = hook,
+			})
+		end,
+		{expr = true}
+	)
+end
+
+map("{", "prev", require("para_nonempty_reverse").is_head_or_tail)
+map("}", "next", require("para_nonempty_reverse").is_head_or_tail)
+
+map("<a-u>", "prev", require("para_nonempty").is_head)
+map("<a-d>", "next", require("para_nonempty").is_tail)
+
+map("<a-w>", "next", require("para_cursor_column").is_head)
+map("<a-e>", "next", require("para_cursor_column").is_tail)
+map("<a-b>", "prev", require("para_cursor_column").is_head)
+
+local caret = function() vim.cmd("normal! ^") end
+map("<pageup>",   "prev", require("para_cursor_indent").is_head_or_tail, caret)
+map("<pagedown>", "next", require("para_cursor_indent").is_head_or_tail, caret)
+map(
+	"<",
+	"next",
+	function(pos)
+		return
+		require("para_cursor_indent").is_head(
+			pos,
+			function(a, b)
+				return a < b
+			end
+		)
+	end,
+	caret
+)
+map(
+	">",
+	"next",
+	function(pos)
+		return
+		require("para_cursor_indent").is_head(
+			pos,
+			function(a, b)
+				return a > b
+			end
+		)
+	end,
+	caret
+)
+map(
+	"(",
+	"prev",
+	function(pos)
+		return
+		require("para_cursor_indent").is_head(
+			pos,
+			function(a, b)
+				return a < b
+			end
+		)
+	end,
+	caret
+)
+map(
+	")",
+	"prev",
+	function(pos)
+		return
+		require("para_cursor_indent").is_head(
+			pos,
+			function(a, b)
+				return a > b
+			end
+		)
+	end,
+	caret
+)
+```
+
+</details>
+
+put this to your config and see what those keymaps does
 
 ## virtcol.nvim
 
@@ -30,7 +132,7 @@ for example, you can simulate the builtin `gj` with:
 ```lua
 vim.keymap.set(
 	"n",
-	"j",
+	"<down>",
 	function()
 		local m = require("virtcol")
 		m.set_cursor(m.next_pos(m.get_cursor()))
@@ -38,9 +140,32 @@ vim.keymap.set(
 )
 ```
 
-> [!NOTE]
->
-> throughout this readme, it's recommended to set `vim.o.virtualedit = "all"` to clearly observe how the motions behave
+## glossary
+
+`pos` refers to a table with `lnum` and `virtcol` fields, for example:
+
+```lua
+{
+	lnum = 37,
+	virtcol = 42,
+}
+```
+
+`is` refers to a function that takes a `pos` and returns a boolean, for example:
+
+```lua
+function(pos)
+	if pos.lnum % 2 == 0 then
+		return false
+	else
+		return true
+	end
+end
+```
+
+
+o
+
 
 a paragraph is a sequence of lines
 
