@@ -56,7 +56,8 @@ M.set_cursor_opts = function(opts)
 	end
 end
 
-M.cache_opts = nil
+M.cache_opts_operator_pending_mode = nil
+M.cache_opts_operator_pending_mode_not = nil
 
 M.start_visual_mode = function()
 	local mode = vim.api.nvim_get_mode().mode
@@ -77,12 +78,21 @@ M.start_visual_mode = function()
 	vim.cmd("normal! " .. vis_mode)
 end
 
-M.apply_cache_opts = function()
-	M.start_visual_mode()
-	if vim.v.count ~= 0 then
-		M.cache_opts.count = vim.v.count
+M.apply_cache_opts = function(is_operator_pending_mode)
+	local cache_opts
+
+	if is_operator_pending_mode then
+		cache_opts = M.cache_opts_operator_pending_mode
+		M.start_visual_mode()
+	else
+		cache_opts = M.cache_opts_operator_pending_mode_not
 	end
-	M.set_cursor_opts(M.cache_opts)
+
+	if vim.v.count ~= 0 then
+		cache_opts.count = vim.v.count
+	end
+
+	M.set_cursor_opts(cache_opts)
 end
 
 ---@param opts {
@@ -97,13 +107,13 @@ M.expr = function(opts)
 	local mode = vim.api.nvim_get_mode().mode
 	local is_operator_pending_mode = string.sub(mode, 1, 2) == "no"
 	if is_operator_pending_mode then
-		M.cache_opts = opts
+		M.cache_opts_operator_pending_mode = opts
 		return
-		[[<cmd>lua require("paramo").apply_cache_opts()<cr>]]
+		[[<cmd>lua require("paramo").apply_cache_opts(true)<cr>]]
 	else
-		vim.schedule(function()
-			M.set_cursor_opts(opts)
-		end)
+		M.cache_opts_operator_pending_mode_not = opts
+		return
+		[[<cmd>lua require("paramo").apply_cache_opts(false)<cr>]]
 	end
 end
 
