@@ -1,9 +1,9 @@
-local H = vim.deepcopy(require("virtcol"))
+local V = require("virtcol")
 
 local M = {}
 
 M.prev_pos = function(pos, is)
-	local pos_candidate = H.prev_pos(pos)
+	local pos_candidate = V.prev_pos(pos)
 	if next(pos_candidate) == nil then
 		return {}
 	end
@@ -14,7 +14,7 @@ M.prev_pos = function(pos, is)
 end
 
 M.next_pos = function(pos, is)
-	local pos_candidate = H.next_pos(pos)
+	local pos_candidate = V.next_pos(pos)
 	if next(pos_candidate) == nil then
 		return {}
 	end
@@ -28,7 +28,7 @@ end
 ---@param direction "prev"|"next"
 ---@param is function
 M.set_cursor = function(count, direction, is)
-	local pos = H.get_cursor()
+	local pos = V.get_cursor()
 	for _ = 1, count do
 		if direction == "prev" then
 			pos = M.prev_pos(pos, is)
@@ -37,7 +37,7 @@ M.set_cursor = function(count, direction, is)
 		end
 		if next(pos) == nil then return end
 	end
-	H.set_cursor(pos)
+	V.set_cursor(pos)
 	vim.cmd("normal! zv")
 end
 

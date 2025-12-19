@@ -1,6 +1,6 @@
-local H = {}
+local M = {}
 
-H.get_cursor = function()
+M.get_cursor = function()
 	local virtcol_min, virtcol_max = unpack(vim.fn.virtcol(".", true))
 	local curswant = vim.fn.getcurpos()[5]
 	local virtcol
@@ -16,7 +16,7 @@ H.get_cursor = function()
 	}
 end
 
-H.posgetchar = function(lnum, col)
+M.posgetchar = function(lnum, col)
 	return
 	vim.fn.strpart(
 		vim.fn.getline(lnum),
@@ -26,14 +26,14 @@ H.posgetchar = function(lnum, col)
 	)
 end
 
-H.set_cursor = function(pos)
+M.set_cursor = function(pos)
 	local virtcol_max = vim.fn.virtcol({pos.lnum, "$"})
 
 	local col = vim.fn.virtcol2col(0, pos.lnum, pos.virtcol)
 	if col == 0 then
 		col = 1
 	elseif pos.virtcol >= virtcol_max then
-		col = col + string.len(H.posgetchar(pos.lnum, col))
+		col = col + string.len(M.posgetchar(pos.lnum, col))
 	end
 	-- fix virtcol2col
 
@@ -48,7 +48,7 @@ H.set_cursor = function(pos)
 	vim.fn.cursor({pos.lnum, col, off, pos.virtcol})
 end
 
-H.width_editable_text = function()
+M.width_editable_text = function()
 -- https://stackoverflow.com/questions/26315925/get-usable-window-width-in-vim-script
 
 	if vim.wo.wrap == false then
@@ -62,9 +62,9 @@ H.width_editable_text = function()
 	return width_editable_text
 end
 
-H.virtcol_division = function(virtcol)
+M.virtcol_division = function(virtcol)
 	local dividend = virtcol
-	local divisor = H.width_editable_text()
+	local divisor = M.width_editable_text()
 	local quotient = math.floor(dividend / divisor) -- lua 5.1 does not support // operator
 	local remainder = dividend % divisor
 
@@ -83,7 +83,7 @@ H.virtcol_division = function(virtcol)
 	}
 end
 
-H.virtcol_max_real = function(lnum)
+M.virtcol_max_real = function(lnum)
 -- this is **real** virtcol_max, use it with care
 	if vim.o.list and vim.opt.listchars:get().eol ~= nil then
 		return vim.fn.virtcol({lnum, "$"})
@@ -93,8 +93,8 @@ H.virtcol_max_real = function(lnum)
 	end
 end
 
-H.prev_pos = function(pos)
-	local division = H.virtcol_division(pos.virtcol)
+M.prev_pos = function(pos)
+	local division = M.virtcol_division(pos.virtcol)
 
 	if division.quotient > 0 then
 		return
@@ -109,7 +109,7 @@ H.prev_pos = function(pos)
 		}
 	end
 
-	local division_prev_line_virtcol_max_real = H.virtcol_division(H.virtcol_max_real(pos.lnum - 1))
+	local division_prev_line_virtcol_max_real = M.virtcol_division(M.virtcol_max_real(pos.lnum - 1))
 	return
 	{
 		lnum = pos.lnum - 1,
@@ -123,10 +123,10 @@ H.prev_pos = function(pos)
 	}
 end
 
-H.next_pos = function(pos)
-	local division = H.virtcol_division(pos.virtcol)
+M.next_pos = function(pos)
+	local division = M.virtcol_division(pos.virtcol)
 
-	local division_current_line_virtcol_max_real = H.virtcol_division(H.virtcol_max_real(pos.lnum))
+	local division_current_line_virtcol_max_real = M.virtcol_division(M.virtcol_max_real(pos.lnum))
 	if division.quotient < division_current_line_virtcol_max_real.quotient then
 		return
 		{
@@ -146,4 +146,4 @@ H.next_pos = function(pos)
 	}
 end
 
-return H
+return M
