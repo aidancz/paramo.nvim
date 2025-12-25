@@ -42,23 +42,31 @@ H.fetch_next_nonempty_indent = function(lnum)
 	end
 	return H.fetch_next_nonempty_indent(lnum + 1)
 end
+H.compare_prev = function(indent_prev, indent_current)
+	return indent_prev ~= indent_current
+end
+H.compare_next = function(indent_next, indent_current)
+	return indent_next ~= indent_current
+end
+H.is_cursor_head = function(pos)
+	return true
+end
+H.is_cursor_tail = function(pos)
+	return true
+end
 
 ---@param opts? {
 ---	indent_empty?: -1|"inherit_consistent_nonzero",
----	compare_prev?: function,
----	compare_next?: function,
+---	indent_block?: "special"|"general",
+---	cursor_relevant?: false|true,
 ---}
 local F = function(opts)
 	opts = vim.tbl_extend(
 		"force",
 		{
 			indent_empty = -1,
-			compare_prev = function(indent_prev, indent_current)
-				return indent_prev ~= indent_current
-			end,
-			compare_next = function(indent_next, indent_current)
-				return indent_next ~= indent_current
-			end,
+			indent_block = "special",
+			cursor_relevant = false,
 		},
 		opts or {}
 	)
@@ -72,9 +80,9 @@ local F = function(opts)
 				local prev_nonempty_indent = H.fetch_prev_nonempty_indent(lnum)
 				local next_nonempty_indent = H.fetch_next_nonempty_indent(lnum)
 				if
-					prev_nonempty_indent ~= 0
-					and
 					prev_nonempty_indent == next_nonempty_indent
+					and
+					prev_nonempty_indent ~= 0
 				then
 					indent = prev_nonempty_indent
 				end
@@ -82,38 +90,70 @@ local F = function(opts)
 			return indent
 		end
 	end
-
-	return
-	{
-		is_head = function(pos)
+	if opts.indent_block == "general" then
+		H.compare_prev = function(indent_prev, indent_current)
+			return indent_prev < indent_current
+		end
+		H.compare_next = function(indent_next, indent_current)
+			return indent_next < indent_current
+		end
+	end
+	if opts.cursor_relevant == true then
+		H.is_cursor_head = function(pos)
 			if
 				vim.tbl_isempty(V.prev_pos(pos))
 				or
-				opts.compare_prev(
-					H.indent(V.prev_pos(pos).lnum),
-					H.indent(pos.lnum)
-				)
+				H.indent(V.prev_pos(pos).lnum) < H.indent(V.get_cursor().lnum)
 			then
 				return true
 			else
 				return false
 			end
-		end,
-		is_tail = function(pos)
+		end
+		H.is_cursor_tail = function(pos)
 			if
 				vim.tbl_isempty(V.next_pos(pos))
 				or
-				opts.compare_next(
-					H.indent(V.next_pos(pos).lnum),
-					H.indent(pos.lnum)
-				)
+				H.indent(V.next_pos(pos).lnum) < H.indent(V.get_cursor().lnum)
 			then
 				return true
 			else
 				return false
 			end
-		end,
-	}
+		end
+	end
+
+	local P = setmetatable({}, {__index = H})
+	P.is_head = function(pos)
+		if
+			vim.tbl_isempty(V.prev_pos(pos))
+			or
+			H.compare_prev(
+				H.indent(V.prev_pos(pos).lnum),
+				H.indent(pos.lnum)
+			)
+		then
+			return H.is_cursor_head(pos)
+		else
+			return false
+		end
+	end
+	P.is_tail = function(pos)
+		if
+			vim.tbl_isempty(V.next_pos(pos))
+			or
+			H.compare_next(
+				H.indent(V.next_pos(pos).lnum),
+				H.indent(pos.lnum)
+			)
+		then
+			return H.is_cursor_tail(pos)
+		else
+			return false
+		end
+	end
+
+	return P
 end
 
 return F

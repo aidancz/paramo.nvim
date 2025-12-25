@@ -20,35 +20,35 @@ end
 local F = function(opts)
 	local H = vim.deepcopy(H)
 
-	return
-	{
-		is_head = function(pos)
-			if
-				(
-					vim.tbl_isempty(V.prev_pos(pos))
-					or
-					H.first_nonblank_char(V.prev_pos(pos).lnum) ~= H.first_nonblank_char(pos.lnum)
-				)
-			then
-				return true
-			else
-				return false
-			end
-		end,
-		is_tail = function(pos)
-			if
-				(
-					vim.tbl_isempty(V.next_pos(pos))
-					or
-					H.first_nonblank_char(V.next_pos(pos).lnum) ~= H.first_nonblank_char(pos.lnum)
-				)
-			then
-				return true
-			else
-				return false
-			end
-		end,
-	}
+	local P = setmetatable({}, {__index = H})
+	P.is_head = function(pos)
+		if
+			(
+				vim.tbl_isempty(V.prev_pos(pos))
+				or
+				H.first_nonblank_char(V.prev_pos(pos).lnum) ~= H.first_nonblank_char(pos.lnum)
+			)
+		then
+			return true
+		else
+			return false
+		end
+	end
+	P.is_tail = function(pos)
+		if
+			(
+				vim.tbl_isempty(V.next_pos(pos))
+				or
+				H.first_nonblank_char(V.next_pos(pos).lnum) ~= H.first_nonblank_char(pos.lnum)
+			)
+		then
+			return true
+		else
+			return false
+		end
+	end
+
+	return P
 end
 
 return F

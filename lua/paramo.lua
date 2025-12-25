@@ -4,7 +4,7 @@ local M = {}
 
 M.prev_pos = function(pos, is)
 	local pos_candidate = V.prev_pos(pos)
-	if next(pos_candidate) == nil then
+	if vim.tbl_isempty(pos_candidate) then
 		return {}
 	end
 	if is(pos_candidate) then
@@ -15,7 +15,7 @@ end
 
 M.next_pos = function(pos, is)
 	local pos_candidate = V.next_pos(pos)
-	if next(pos_candidate) == nil then
+	if vim.tbl_isempty(pos_candidate) then
 		return {}
 	end
 	if is(pos_candidate) then
@@ -35,7 +35,7 @@ M.set_cursor = function(count, direction, is)
 		else
 			pos = M.next_pos(pos, is)
 		end
-		if next(pos) == nil then return end
+		if vim.tbl_isempty(pos) then return end
 	end
 	V.set_cursor(pos)
 	vim.cmd("normal! zv")
@@ -133,6 +133,90 @@ M.start_visual_mode = function()
 	end)
 
 	vim.cmd("normal! " .. vis_mode)
+end
+
+-- # the following is for para textobject
+
+M.pos_is_in_range = function(pos, range)
+	if pos.lnum < range[1].lnum then
+		return false
+	end
+	if pos.lnum > range[2].lnum then
+		return false
+	end
+	if pos.lnum == range[1].lnum and pos.virtcol < range[1].virtcol then
+		return false
+	end
+	if pos.lnum == range[2].lnum and pos.virtcol > range[2].virtcol then
+		return false
+	end
+	return true
+end
+
+M.find_para = function(para, opts)
+	opts = vim.tbl_extend(
+		"force",
+		{
+			n_lines = "unlimited",
+			n_times = 1,
+			reference_region = "cursor",
+			search_method = "cover_or_next",
+		},
+		opts or {}
+	)
+	-- NOTE: require("mini.ai").find_textobject
+	-- NOTE: have no effect yet, implement the simplest case above
+
+	local head2range = function(head)
+		if para.is_tail(head) then
+			return {head, head}
+		else
+			return {head, M.next_pos(head, para.is_tail)}
+		end
+	end
+	local tail2range = function(tail)
+		if para.is_head(tail) then
+			return {tail, tail}
+		else
+			return {M.prev_pos(tail, para.is_head), tail}
+		end
+	end
+
+	local pos_cursor = V.get_cursor()
+
+	local pos_prev_head = M.prev_pos(pos_cursor, para.is_head)
+	local pos_next_head = M.next_pos(pos_cursor, para.is_head)
+
+	if para.is_head(pos_cursor) then
+		return head2range(pos_cursor)
+	end
+	if para.is_tail(pos_cursor) then
+		return tail2range(pos_cursor)
+	end
+	if vim.tbl_isempty(pos_prev_head) and vim.tbl_isempty(pos_next_head) then
+		return {{}, {}}
+	end
+	if vim.tbl_isempty(pos_prev_head) then
+		local range_next_head = head2range(pos_next_head)
+		return range_next_head
+	end
+	if vim.tbl_isempty(pos_next_head) then
+		local range_prev_head = head2range(pos_prev_head)
+		if M.pos_is_in_range(pos_cursor, range_prev_head) then
+			return range_prev_head
+		else
+			return {{}, {}}
+		end
+	end
+	if true then
+		local range_prev_head = head2range(pos_prev_head)
+		local range_next_head = head2range(pos_next_head)
+		if M.pos_is_in_range(pos_cursor, range_prev_head) then
+			return range_prev_head
+		else
+			return range_next_head
+		end
+	end
 end
 
 return M

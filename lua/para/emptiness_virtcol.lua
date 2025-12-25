@@ -27,7 +27,7 @@ H.is_empty = function(pos)
 end
 
 ---@param opts? {
----	empty?: boolean, @default true
+---	empty?: boolean, @default false
 ---}
 local F = function(opts)
 	opts = vim.tbl_extend("force", {empty = false}, opts or {})
@@ -40,39 +40,39 @@ local F = function(opts)
 		end
 	end
 
-	return
-	{
-		is_head = function(pos)
-			if
-				not H.is_empty(pos)
-				and
-				(
-					vim.tbl_isempty(V.prev_pos(pos))
-					or
-					H.is_empty(V.prev_pos(pos))
-				)
-			then
-				return true
-			else
-				return false
-			end
-		end,
-		is_tail = function(pos)
-			if
-				not H.is_empty(pos)
-				and
-				(
-					vim.tbl_isempty(V.next_pos(pos))
-					or
-					H.is_empty(V.next_pos(pos))
-				)
-			then
-				return true
-			else
-				return false
-			end
-		end,
-	}
+	local P = setmetatable({}, {__index = H})
+	P.is_head = function(pos)
+		if
+			not H.is_empty(pos)
+			and
+			(
+				vim.tbl_isempty(V.prev_pos(pos))
+				or
+				H.is_empty(V.prev_pos(pos))
+			)
+		then
+			return true
+		else
+			return false
+		end
+	end
+	P.is_tail = function(pos)
+		if
+			not H.is_empty(pos)
+			and
+			(
+				vim.tbl_isempty(V.next_pos(pos))
+				or
+				H.is_empty(V.next_pos(pos))
+			)
+		then
+			return true
+		else
+			return false
+		end
+	end
+
+	return P
 end
 
 return F
