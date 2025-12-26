@@ -137,7 +137,14 @@ end
 
 -- # the following is for para textobject
 
+M.range_is_empty = function(range)
+	return vim.deep_equal(range, {{}, {}})
+end
+
 M.pos_is_in_range = function(pos, range)
+	if M.range_is_empty(range) then
+		return false
+	end
 	if pos.lnum < range[1].lnum then
 		return false
 	end
@@ -153,6 +160,29 @@ M.pos_is_in_range = function(pos, range)
 	return true
 end
 
+M.head2range = function(head, is_tail)
+	if vim.tbl_isempty(head) then
+		return {{}, {}}
+	end
+	if is_tail(head) then
+		return {head, head}
+	end
+	return {head, M.next_pos(head, is_tail)}
+end
+
+M.tail2range = function(tail, is_head)
+	if vim.tbl_isempty(tail) then
+		return {{}, {}}
+	end
+	if is_head(tail) then
+		return {tail, tail}
+	end
+	return {M.prev_pos(tail, is_head), tail}
+end
+
+---@param opts? {
+---	search_method?: "cover"|"next"|"prev"|"cover_or_next"|"cover_or_prev",
+---}
 M.find_para = function(para, opts)
 	opts = vim.tbl_extend(
 		"force",
@@ -165,57 +195,90 @@ M.find_para = function(para, opts)
 		opts or {}
 	)
 	-- NOTE: require("mini.ai").find_textobject
-	-- NOTE: have no effect yet, implement the simplest case above
+	-- NOTE: partly implemented
 
-	local head2range = function(head)
-		if para.is_tail(head) then
-			return {head, head}
-		else
-			return {head, M.next_pos(head, para.is_tail)}
+	local range_cover
+	local range_next
+	local range_prev
+	local select_range = function()
+		if opts.search_method == "cover" then
+			return range_cover()
 		end
-	end
-	local tail2range = function(tail)
-		if para.is_head(tail) then
-			return {tail, tail}
-		else
-			return {M.prev_pos(tail, para.is_head), tail}
+		if opts.search_method == "next" then
+			return range_next()
+		end
+		if opts.search_method == "prev" then
+			return range_prev()
+		end
+		if opts.search_method == "cover_or_next" then
+			return
+				not M.range_is_empty(range_cover())
+				and
+				range_cover()
+				or
+				range_next()
+		end
+		if opts.search_method == "cover_or_prev" then
+			return
+				not M.range_is_empty(range_cover())
+				and
+				range_cover()
+				or
+				range_prev()
 		end
 	end
 
 	local pos_cursor = V.get_cursor()
 
-	local pos_prev_head = M.prev_pos(pos_cursor, para.is_head)
-	local pos_next_head = M.next_pos(pos_cursor, para.is_head)
-
-	if para.is_head(pos_cursor) then
-		return head2range(pos_cursor)
-	end
-	if para.is_tail(pos_cursor) then
-		return tail2range(pos_cursor)
-	end
-	if vim.tbl_isempty(pos_prev_head) and vim.tbl_isempty(pos_next_head) then
+	local range_empty = function()
 		return {{}, {}}
 	end
-	if vim.tbl_isempty(pos_prev_head) then
-		local range_next_head = head2range(pos_next_head)
-		return range_next_head
+	local range_cursor_head = function()
+		return M.head2range(pos_cursor, para.is_tail)
 	end
-	if vim.tbl_isempty(pos_next_head) then
-		local range_prev_head = head2range(pos_prev_head)
-		if M.pos_is_in_range(pos_cursor, range_prev_head) then
-			return range_prev_head
-		else
-			return {{}, {}}
-		end
+	local range_cursor_tail = function()
+		return M.tail2range(pos_cursor, para.is_head)
+	end
+	local range_next_head = function()
+		local pos_next_head = M.next_pos(pos_cursor, para.is_head)
+		return M.head2range(pos_next_head, para.is_tail)
+	end
+	local range_next_tail = function()
+		local pos_next_tail = M.next_pos(pos_cursor, para.is_tail)
+		return M.tail2range(pos_next_tail, para.is_head)
+	end
+	local range_prev_head = function()
+		local pos_prev_head = M.prev_pos(pos_cursor, para.is_head)
+		return M.head2range(pos_prev_head, para.is_tail)
+	end
+	local range_prev_tail = function()
+		local pos_prev_tail = M.prev_pos(pos_cursor, para.is_tail)
+		return M.tail2range(pos_prev_tail, para.is_head)
+	end
+
+	if para.is_head(pos_cursor) then
+		range_cover = range_cursor_head
+		range_next = range_next_head
+		range_prev = range_prev_head
+		return select_range()
+	end
+	if para.is_tail(pos_cursor) then
+		range_cover = range_cursor_tail
+		range_next = range_next_tail
+		range_prev = range_prev_tail
+		return select_range()
 	end
 	if true then
-		local range_prev_head = head2range(pos_prev_head)
-		local range_next_head = head2range(pos_next_head)
-		if M.pos_is_in_range(pos_cursor, range_prev_head) then
-			return range_prev_head
+		if M.pos_is_in_range(pos_cursor, range_prev_head()) then
+			range_cover = range_prev_head
+			range_next = range_next_head
+			range_prev = range_prev_tail
 		else
-			return range_next_head
+			range_cover = range_empty
+			range_next = range_next_head
+			range_prev = range_prev_head
 		end
+		return select_range()
 	end
 end
 

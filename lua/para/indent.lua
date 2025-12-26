@@ -42,118 +42,109 @@ H.fetch_next_nonempty_indent = function(lnum)
 	end
 	return H.fetch_next_nonempty_indent(lnum + 1)
 end
-H.compare_prev = function(indent_prev, indent_current)
-	return indent_prev ~= indent_current
-end
-H.compare_next = function(indent_next, indent_current)
-	return indent_next ~= indent_current
-end
-H.is_cursor_head = function(pos)
-	return true
-end
-H.is_cursor_tail = function(pos)
-	return true
-end
 
 ---@param opts? {
----	indent_empty?: -1|"inherit_consistent_nonzero",
----	indent_block?: "special"|"general",
----	cursor_relevant?: false|true,
+---	indent_empty?: -1|"inherit_min_nonzero",
+---	type?: "=="|">="|"==."|">=.",
 ---}
 local F = function(opts)
 	opts = vim.tbl_extend(
 		"force",
 		{
 			indent_empty = -1,
-			indent_block = "special",
-			cursor_relevant = false,
+			type = "==",
 		},
 		opts or {}
 	)
 
 	local H = vim.deepcopy(H)
-	if opts.indent_empty == "inherit_consistent_nonzero" then
+	if opts.indent_empty == "inherit_min_nonzero" then
 		local f = H.indent
 		H.indent = function(lnum)
 			local indent = f(lnum)
 			if indent == -1 then
 				local prev_nonempty_indent = H.fetch_prev_nonempty_indent(lnum)
 				local next_nonempty_indent = H.fetch_next_nonempty_indent(lnum)
+				local min = math.min(prev_nonempty_indent, next_nonempty_indent)
 				if
-					prev_nonempty_indent == next_nonempty_indent
-					and
-					prev_nonempty_indent ~= 0
+					min ~= 0
 				then
-					indent = prev_nonempty_indent
+					indent = min
 				end
 			end
 			return indent
 		end
 	end
-	if opts.indent_block == "general" then
-		H.compare_prev = function(indent_prev, indent_current)
-			return indent_prev < indent_current
-		end
-		H.compare_next = function(indent_next, indent_current)
-			return indent_next < indent_current
-		end
-	end
-	if opts.cursor_relevant == true then
-		H.is_cursor_head = function(pos)
-			if
-				vim.tbl_isempty(V.prev_pos(pos))
-				or
-				H.indent(V.prev_pos(pos).lnum) < H.indent(V.get_cursor().lnum)
-			then
-				return true
-			else
-				return false
-			end
-		end
-		H.is_cursor_tail = function(pos)
-			if
-				vim.tbl_isempty(V.next_pos(pos))
-				or
-				H.indent(V.next_pos(pos).lnum) < H.indent(V.get_cursor().lnum)
-			then
-				return true
-			else
-				return false
-			end
+
+	H.indent_pos = function(pos)
+		if vim.tbl_isempty(pos) then
+			return -1
+		else
+			return H.indent(pos.lnum)
 		end
 	end
 
 	local P = setmetatable({}, {__index = H})
-	P.is_head = function(pos)
-		if
-			vim.tbl_isempty(V.prev_pos(pos))
-			or
-			H.compare_prev(
-				H.indent(V.prev_pos(pos).lnum),
-				H.indent(pos.lnum)
-			)
-		then
-			return H.is_cursor_head(pos)
-		else
-			return false
+	if opts.type == "==" then
+		P.is_head = function(pos)
+			return
+				H.indent_pos(pos) ~= H.indent_pos(V.prev_pos(pos))
 		end
-	end
-	P.is_tail = function(pos)
-		if
-			vim.tbl_isempty(V.next_pos(pos))
-			or
-			H.compare_next(
-				H.indent(V.next_pos(pos).lnum),
-				H.indent(pos.lnum)
-			)
-		then
-			return H.is_cursor_tail(pos)
-		else
-			return false
+		P.is_tail = function(pos)
+			return
+				H.indent_pos(pos) ~= H.indent_pos(V.next_pos(pos))
 		end
+		return P
 	end
-
-	return P
+	if opts.type == "==." then
+		P.is_head = function(pos)
+			return
+				H.indent_pos(pos) ~= H.indent_pos(V.prev_pos(pos))
+				and
+				H.indent_pos(pos) == H.indent_pos(V.get_cursor())
+		end
+		P.is_tail = function(pos)
+			return
+				H.indent_pos(pos) ~= H.indent_pos(V.next_pos(pos))
+				and
+				H.indent_pos(pos) == H.indent_pos(V.get_cursor())
+		end
+		return P
+	end
+	if opts.type == ">=" then
+		P.is_head = function(pos)
+			return
+				H.indent_pos(pos) > H.indent_pos(V.prev_pos(pos))
+		end
+		P.is_tail = function(pos)
+			return
+				H.indent_pos(pos) > H.indent_pos(V.next_pos(pos))
+		end
+		return P
+	end
+	if opts.type == ">=." then
+		P.is_head = function(pos)
+			return
+				H.indent_pos(pos) > H.indent_pos(V.prev_pos(pos))
+				and
+				(
+					H.indent_pos(pos) >= H.indent_pos(V.get_cursor())
+					and
+					H.indent_pos(V.get_cursor()) > H.indent_pos(V.prev_pos(pos))
+				)
+		end
+		P.is_tail = function(pos)
+			return
+				H.indent_pos(pos) > H.indent_pos(V.next_pos(pos))
+				and
+				(
+					H.indent_pos(pos) >= H.indent_pos(V.get_cursor())
+					and
+					H.indent_pos(V.get_cursor()) > H.indent_pos(V.next_pos(pos))
+				)
+		end
+		return P
+	end
 end
 
 return F
