@@ -195,7 +195,7 @@ M.find_para = function(para, opts)
 		opts or {}
 	)
 	-- NOTE: require("mini.ai").find_textobject
-	-- NOTE: partly implemented
+	-- NOTE: partly implemented, see @param above
 
 	local range_cover
 	local range_next
@@ -268,16 +268,16 @@ M.find_para = function(para, opts)
 		range_prev = range_prev_tail
 		return select_range()
 	end
+	if M.pos_is_in_range(pos_cursor, range_prev_head()) then
+		range_cover = range_prev_head
+		range_next = range_next_head
+		range_prev = range_prev_tail
+		return select_range()
+	end
 	if true then
-		if M.pos_is_in_range(pos_cursor, range_prev_head()) then
-			range_cover = range_prev_head
-			range_next = range_next_head
-			range_prev = range_prev_tail
-		else
-			range_cover = range_empty
-			range_next = range_next_head
-			range_prev = range_prev_head
-		end
+		range_cover = range_empty
+		range_next = range_next_head
+		range_prev = range_prev_head
 		return select_range()
 	end
 end

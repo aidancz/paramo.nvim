@@ -44,7 +44,7 @@ H.fetch_next_nonempty_indent = function(lnum)
 end
 
 ---@param opts? {
----	indent_empty?: -1|"inherit_min_nonzero",
+---	indent_empty?: -1|"inherit_max_nonzero",
 ---	type?: "=="|">="|"==."|">=.",
 ---}
 local F = function(opts)
@@ -58,18 +58,18 @@ local F = function(opts)
 	)
 
 	local H = vim.deepcopy(H)
-	if opts.indent_empty == "inherit_min_nonzero" then
+	if opts.indent_empty == "inherit_max_nonzero" then
 		local f = H.indent
 		H.indent = function(lnum)
 			local indent = f(lnum)
 			if indent == -1 then
 				local prev_nonempty_indent = H.fetch_prev_nonempty_indent(lnum)
 				local next_nonempty_indent = H.fetch_next_nonempty_indent(lnum)
-				local min = math.min(prev_nonempty_indent, next_nonempty_indent)
+				local max = math.max(prev_nonempty_indent, next_nonempty_indent)
 				if
-					min ~= 0
+					max ~= 0
 				then
-					indent = min
+					indent = max
 				end
 			end
 			return indent
