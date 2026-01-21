@@ -137,12 +137,21 @@ end
 
 -- # the following is for para textobject
 
-M.range_is_empty = function(range)
-	return vim.deep_equal(range, {{}, {}})
+M.range_is_valid = function(range)
+	local range_contains_empty_pos = vim.tbl_contains(
+		range,
+		function(v)
+			return vim.deep_equal(v, {})
+		end,
+		{
+			predicate = true,
+		}
+	)
+	return not range_contains_empty_pos
 end
 
 M.pos_is_in_range = function(pos, range)
-	if M.range_is_empty(range) then
+	if not M.range_is_valid(range) then
 		return false
 	end
 	if pos.lnum < range[1].lnum then
@@ -212,7 +221,7 @@ M.find_para = function(para, opts)
 		end
 		if opts.search_method == "cover_or_next" then
 			return
-				not M.range_is_empty(range_cover())
+				M.range_is_valid(range_cover())
 				and
 				range_cover()
 				or
@@ -220,7 +229,7 @@ M.find_para = function(para, opts)
 		end
 		if opts.search_method == "cover_or_prev" then
 			return
-				not M.range_is_empty(range_cover())
+				M.range_is_valid(range_cover())
 				and
 				range_cover()
 				or
