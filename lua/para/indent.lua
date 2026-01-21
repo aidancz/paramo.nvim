@@ -44,21 +44,34 @@ H.fetch_next_nonempty_indent = function(lnum)
 end
 
 ---@param opts? {
----	indent_empty?: -1|"inherit_max_nonzero",
+---	indent_empty?: "intact"|"max"|"max_beyond_cursor",
 ---	type?: "=="|">="|"==."|">=.",
 ---}
 local F = function(opts)
 	opts = vim.tbl_extend(
 		"force",
 		{
-			indent_empty = -1,
+			indent_empty = "intact",
 			type = "==",
 		},
 		opts or {}
 	)
 
 	local H = vim.deepcopy(H)
-	if opts.indent_empty == "inherit_max_nonzero" then
+	if opts.indent_empty == "max" then
+		local f = H.indent
+		H.indent = function(lnum)
+			local indent = f(lnum)
+			if indent == -1 then
+				local prev_nonempty_indent = H.fetch_prev_nonempty_indent(lnum)
+				local next_nonempty_indent = H.fetch_next_nonempty_indent(lnum)
+				local max = math.max(prev_nonempty_indent, next_nonempty_indent)
+				indent = max
+			end
+			return indent
+		end
+	end
+	if opts.indent_empty == "max_beyond_cursor" then
 		local f = H.indent
 		H.indent = function(lnum)
 			local indent = f(lnum)
@@ -67,7 +80,7 @@ local F = function(opts)
 				local next_nonempty_indent = H.fetch_next_nonempty_indent(lnum)
 				local max = math.max(prev_nonempty_indent, next_nonempty_indent)
 				if
-					max ~= 0
+					max > f(V.get_cursor().lnum)
 				then
 					indent = max
 				end
@@ -130,7 +143,7 @@ local F = function(opts)
 				(
 					H.indent_pos(pos) >= H.indent_pos(V.get_cursor())
 					and
-					H.indent_pos(V.get_cursor()) > H.indent_pos(V.prev_pos(pos))
+					H.indent_pos(V.prev_pos(pos)) < H.indent_pos(V.get_cursor())
 				)
 		end
 		P.is_tail = function(pos)
@@ -140,7 +153,7 @@ local F = function(opts)
 				(
 					H.indent_pos(pos) >= H.indent_pos(V.get_cursor())
 					and
-					H.indent_pos(V.get_cursor()) > H.indent_pos(V.next_pos(pos))
+					H.indent_pos(V.next_pos(pos)) < H.indent_pos(V.get_cursor())
 				)
 		end
 		return P
